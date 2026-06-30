@@ -97,7 +97,7 @@ def generate():
             "BatchStrOutput", "BatchTokenIDOutput", "BatchEmbeddingOutput",
             "TokenizedGenerateReqInput", "TokenizedEmbeddingReqInput",
             "AbortReq", "FlushCacheReqInput", "FlushCacheReqOutput",
-            "ProfileReq",
+            "ProfileReq", "PickleWrapper",
         )
 
         # Struct definition — all fields rmpv::Value for now (Phase 1 scaffolding)

@@ -48,6 +48,37 @@ impl PickleWrapper {
         rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
+
+    pub fn decode(data: &[u8]) -> Result<Self, Error> {
+        use rmpv::Value;
+        const TAG: &str = "PickleWrapper";
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
+            .ok_or_else(|| Error::Codec("expected array".to_string()))?;
+
+        // Validate tag (index 0)
+        let tag = arr
+            .first()
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
+
+        // Validate array length (expected 2: tag + 1 fields)
+        if arr.len() != 2 {
+            return Err(Error::Codec(format!(
+                "expected 2 elements, got {}",
+                arr.len()
+            )));
+        }
+
+        let data: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
+
+        Ok(Self { data })
+    }
 }
 
 #[derive(Debug, Clone)]

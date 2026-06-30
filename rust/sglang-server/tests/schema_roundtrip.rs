@@ -182,3 +182,22 @@ fn roundtrip_reasoner() {
 fn roundtrip_session() {
     roundtrip_fixture("session_request");
 }
+
+#[test]
+fn roundtrip_pickle_wrapper() {
+    let repo_root = repo_root();
+    let path = repo_root.join(FIXTURE_DIR).join("pickle_wrapper.msgpack");
+    let fixture_bytes = std::fs::read(&path).unwrap();
+
+    let val: rmpv::Value = rmpv::decode::read_value(&mut &fixture_bytes[..]).unwrap();
+    let arr = val.as_array().unwrap();
+    assert!(arr.len() >= 2, "pickle_wrapper should have >=2 items");
+
+    for item in arr {
+        let mut buf = Vec::new();
+        rmpv::encode::write_value(&mut buf, item).unwrap();
+        let obj = sglang_server::schema::PickleWrapper::decode(&buf).expect("decode");
+        let re_encoded = obj.encode().expect("encode");
+        assert_eq!(buf, re_encoded, "PickleWrapper round-trip");
+    }
+}

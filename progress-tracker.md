@@ -81,7 +81,7 @@ Deliverables:
   - [x] `PortArgsView`
 - [x] `msgspec` tagged-array codec (90 structs, encode for all, decode for
   critical structs, round-trip tests passing).
-- [ ] `PickleWrapper` opaque payload round-trip.
+- [x] `PickleWrapper` opaque payload round-trip (encode + decode, 17th round-trip test).
 - [ ] `array("q")` token ID compatibility.
 - [ ] ZMQ send-to-Scheduler wrapper (ring-based path exists via `Server::recv_requests`).
 - [ ] ZMQ receive-from-DetokenizerManager wrapper (ring-based path exists via `Server::push_chunk`).
