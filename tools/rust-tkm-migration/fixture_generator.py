@@ -38,15 +38,11 @@ def _enc_hook(obj):
     raise TypeError(f"Cannot encode {type(obj)}")
 
 
-_encoder = msgspec.msgpack.Encoder(enc_hook=_enc_hook)
-
-
-def _encode_fn(obj):
-    return _encoder.encode(obj)
-
+_shadow_encoder = msgspec.msgpack.Encoder(enc_hook=_enc_hook)
 
 # ── Try real io_struct imports for struct types ──
 _using_real_imports = False
+_encode_fn = _shadow_encoder.encode
 try:
     from array import array
     from sglang.srt.managers.io_struct import (
@@ -63,7 +59,9 @@ try:
         SessionParams,
         TokenizedEmbeddingReqInput,
         TokenizedGenerateReqInput,
+        msgpack_encode as _encode_fn,
     )
+    from sglang.srt.sampling.sampling_params import SamplingParams as _RealSamplingParams
     _using_real_imports = True
 except ImportError as _exc:
     if "--allow-shadow-fixtures" not in sys.argv:
@@ -71,12 +69,15 @@ except ImportError as _exc:
         print("Use --allow-shadow-fixtures to generate with shadow copies (may drift from production).")
         sys.exit(1)
     warnings.warn("Using shadow copies (may drift from production wire format)")
+    _encode_fn = _shadow_encoder.encode
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 
 
 def _sp(obj):
-    """Build sampling params dict (msgspec encodes as a map, matching SamplingParams wire)."""
+    """Build sampling params — SamplingParams object when using real imports, dict otherwise."""
+    if _using_real_imports:
+        return _RealSamplingParams(**obj)
     return obj
 
 
@@ -507,16 +508,32 @@ def write_fixtures(output_dir):
 if __name__ == "__main__":
     if "--check-real-imports" in sys.argv:
         # Smoke test: construct and encode one minimal struct using real classes.
-        # If imports succeeded, so will this — unless the struct construction is
-        # incompatible with the production class definition.
+        # Must pass ALL fields explicitly — production uses dataclasses.field()
+        # defaults that msgspec doesn't evaluate until encoding.
         obj = TokenizedGenerateReqInput(
             rid="smoke-rid",
             input_text="test",
             input_ids=array("q", [1, 2, 3]),
-            sampling_params={"temperature": 0.5},
-            stream=False,
+            input_embeds=None, mm_inputs=None, token_type_ids=None,
+            sampling_params=_sp({"temperature": 0.5, "max_new_tokens": 10}),
+            return_logprob=False, logprob_start_len=-1, top_logprobs_num=0,
+            token_ids_logprob=None, stream=False,
+            return_hidden_states=False, return_routed_experts=False,
+            routed_experts_start_len=0, return_indexer_topk=False,
+            session_id=None, session_params=None,
+            lora_id=None, custom_logit_processor=None,
+            positional_embed_overrides=None,
+            bootstrap_host=None, bootstrap_port=None, bootstrap_room=None,
+            bootstrap_pair_key=None, decode_tp_size=None,
+            routed_dp_rank=None, disagg_prefill_dp_rank=None,
+            routing_key=None, require_reasoning=False,
+            priority=None, extra_key=None, no_logs=False,
+            return_bytes=False, return_entropy=False,
+            need_wait_for_mm_inputs=False, num_items_assigned=None,
+            mm_data_mooncake=None, encoder_urls=None,
+            multi_item_delimiter_indices=None, time_stats=None,
         )
-        _encoder.encode(obj)
+        _encode_fn(obj)
         print("OK: Real io_struct.py imports + encode work")
         sys.exit(0)
     elif "--write" in sys.argv:

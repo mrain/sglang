@@ -16,11 +16,21 @@ impl SessionParams {
     pub fn encode_value(&self) -> rmpv::Value {
         use rmpv::Value;
         let mut map = Vec::new();
-        if let Some(v) = &self.id { map.push((Value::from("id"), Value::from(v.as_str()))); }
-        if let Some(v) = &self.rid { map.push((Value::from("rid"), Value::from(v.as_str()))); }
-        if let Some(v) = self.offset { map.push((Value::from("offset"), Value::from(v))); }
-        if let Some(v) = self.replace { map.push((Value::from("replace"), Value::from(v))); }
-        if let Some(v) = self.drop_previous_output { map.push((Value::from("drop_previous_output"), Value::from(v))); }
+        if let Some(v) = &self.id {
+            map.push((Value::from("id"), Value::from(v.as_str())));
+        }
+        if let Some(v) = &self.rid {
+            map.push((Value::from("rid"), Value::from(v.as_str())));
+        }
+        if let Some(v) = self.offset {
+            map.push((Value::from("offset"), Value::from(v)));
+        }
+        if let Some(v) = self.replace {
+            map.push((Value::from("replace"), Value::from(v)));
+        }
+        if let Some(v) = self.drop_previous_output {
+            map.push((Value::from("drop_previous_output"), Value::from(v)));
+        }
         Value::Map(map)
     }
 }
@@ -33,13 +43,9 @@ pub struct PickleWrapper {
 impl PickleWrapper {
     pub fn encode(&self) -> Result<Vec<u8>, Error> {
         use rmpv::Value;
-        let arr = Value::Array(vec![
-            Value::from("PickleWrapper"),
-            self.data.clone(),
-        ]);
+        let arr = Value::Array(vec![Value::from("PickleWrapper"), self.data.clone()]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -139,31 +145,34 @@ impl TokenizedGenerateReqInput {
             self.time_stats.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "TokenizedGenerateReqInput";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 43: tag + 42 fields)
         if arr.len() != 43 {
-            return Err(Error::Codec(format!("expected 43 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 43 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rid: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -181,13 +190,15 @@ impl TokenizedGenerateReqInput {
         let stream: rmpv::Value = arr.get(13).cloned().unwrap_or(rmpv::Value::Nil);
         let return_hidden_states: rmpv::Value = arr.get(14).cloned().unwrap_or(rmpv::Value::Nil);
         let return_routed_experts: rmpv::Value = arr.get(15).cloned().unwrap_or(rmpv::Value::Nil);
-        let routed_experts_start_len: rmpv::Value = arr.get(16).cloned().unwrap_or(rmpv::Value::Nil);
+        let routed_experts_start_len: rmpv::Value =
+            arr.get(16).cloned().unwrap_or(rmpv::Value::Nil);
         let return_indexer_topk: rmpv::Value = arr.get(17).cloned().unwrap_or(rmpv::Value::Nil);
         let session_id: rmpv::Value = arr.get(18).cloned().unwrap_or(rmpv::Value::Nil);
         let session_params: rmpv::Value = arr.get(19).cloned().unwrap_or(rmpv::Value::Nil);
         let lora_id: rmpv::Value = arr.get(20).cloned().unwrap_or(rmpv::Value::Nil);
         let custom_logit_processor: rmpv::Value = arr.get(21).cloned().unwrap_or(rmpv::Value::Nil);
-        let positional_embed_overrides: rmpv::Value = arr.get(22).cloned().unwrap_or(rmpv::Value::Nil);
+        let positional_embed_overrides: rmpv::Value =
+            arr.get(22).cloned().unwrap_or(rmpv::Value::Nil);
         let bootstrap_host: rmpv::Value = arr.get(23).cloned().unwrap_or(rmpv::Value::Nil);
         let bootstrap_port: rmpv::Value = arr.get(24).cloned().unwrap_or(rmpv::Value::Nil);
         let bootstrap_room: rmpv::Value = arr.get(25).cloned().unwrap_or(rmpv::Value::Nil);
@@ -206,7 +217,8 @@ impl TokenizedGenerateReqInput {
         let num_items_assigned: rmpv::Value = arr.get(38).cloned().unwrap_or(rmpv::Value::Nil);
         let mm_data_mooncake: rmpv::Value = arr.get(39).cloned().unwrap_or(rmpv::Value::Nil);
         let encoder_urls: rmpv::Value = arr.get(40).cloned().unwrap_or(rmpv::Value::Nil);
-        let multi_item_delimiter_indices: rmpv::Value = arr.get(41).cloned().unwrap_or(rmpv::Value::Nil);
+        let multi_item_delimiter_indices: rmpv::Value =
+            arr.get(41).cloned().unwrap_or(rmpv::Value::Nil);
         let time_stats: rmpv::Value = arr.get(42).cloned().unwrap_or(rmpv::Value::Nil);
 
         Ok(Self {
@@ -273,8 +285,7 @@ impl BatchTokenizedGenerateReqInput {
             self.batch.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -320,31 +331,34 @@ impl TokenizedEmbeddingReqInput {
             self.time_stats.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "TokenizedEmbeddingReqInput";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 16: tag + 15 fields)
         if arr.len() != 16 {
-            return Err(Error::Codec(format!("expected 16 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 16 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rid: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -355,12 +369,15 @@ impl TokenizedEmbeddingReqInput {
         let token_type_ids: rmpv::Value = arr.get(6).cloned().unwrap_or(rmpv::Value::Nil);
         let sampling_params: rmpv::Value = arr.get(7).cloned().unwrap_or(rmpv::Value::Nil);
         let lora_id: rmpv::Value = arr.get(8).cloned().unwrap_or(rmpv::Value::Nil);
-        let positional_embed_overrides: rmpv::Value = arr.get(9).cloned().unwrap_or(rmpv::Value::Nil);
+        let positional_embed_overrides: rmpv::Value =
+            arr.get(9).cloned().unwrap_or(rmpv::Value::Nil);
         let routed_dp_rank: rmpv::Value = arr.get(10).cloned().unwrap_or(rmpv::Value::Nil);
         let priority: rmpv::Value = arr.get(11).cloned().unwrap_or(rmpv::Value::Nil);
         let dimensions: rmpv::Value = arr.get(12).cloned().unwrap_or(rmpv::Value::Nil);
-        let return_pooled_hidden_states: rmpv::Value = arr.get(13).cloned().unwrap_or(rmpv::Value::Nil);
-        let multi_item_delimiter_indices: rmpv::Value = arr.get(14).cloned().unwrap_or(rmpv::Value::Nil);
+        let return_pooled_hidden_states: rmpv::Value =
+            arr.get(13).cloned().unwrap_or(rmpv::Value::Nil);
+        let multi_item_delimiter_indices: rmpv::Value =
+            arr.get(14).cloned().unwrap_or(rmpv::Value::Nil);
         let time_stats: rmpv::Value = arr.get(15).cloned().unwrap_or(rmpv::Value::Nil);
 
         Ok(Self {
@@ -400,8 +417,7 @@ impl BatchTokenizedEmbeddingReqInput {
             self.batch.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -505,31 +521,34 @@ impl BatchTokenIDOutput {
             self.spec_correct_drafts_histogram.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "BatchTokenIDOutput";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 45: tag + 44 fields)
         if arr.len() != 45 {
-            return Err(Error::Codec(format!("expected 45 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 45 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rids: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -540,25 +559,35 @@ impl BatchTokenIDOutput {
         let read_offsets: rmpv::Value = arr.get(6).cloned().unwrap_or(rmpv::Value::Nil);
         let output_ids: rmpv::Value = arr.get(7).cloned().unwrap_or(rmpv::Value::Nil);
         let skip_special_tokens: rmpv::Value = arr.get(8).cloned().unwrap_or(rmpv::Value::Nil);
-        let spaces_between_special_tokens: rmpv::Value = arr.get(9).cloned().unwrap_or(rmpv::Value::Nil);
+        let spaces_between_special_tokens: rmpv::Value =
+            arr.get(9).cloned().unwrap_or(rmpv::Value::Nil);
         let no_stop_trim: rmpv::Value = arr.get(10).cloned().unwrap_or(rmpv::Value::Nil);
         let prompt_tokens: rmpv::Value = arr.get(11).cloned().unwrap_or(rmpv::Value::Nil);
         let reasoning_tokens: rmpv::Value = arr.get(12).cloned().unwrap_or(rmpv::Value::Nil);
         let completion_tokens: rmpv::Value = arr.get(13).cloned().unwrap_or(rmpv::Value::Nil);
         let cached_tokens: rmpv::Value = arr.get(14).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_logprobs_val: rmpv::Value = arr.get(15).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_logprobs_idx: rmpv::Value = arr.get(16).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_logprobs_val: rmpv::Value = arr.get(17).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_logprobs_idx: rmpv::Value = arr.get(18).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_logprobs_val: rmpv::Value =
+            arr.get(15).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_logprobs_idx: rmpv::Value =
+            arr.get(16).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_logprobs_val: rmpv::Value =
+            arr.get(17).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_logprobs_idx: rmpv::Value =
+            arr.get(18).cloned().unwrap_or(rmpv::Value::Nil);
         let input_top_logprobs_val: rmpv::Value = arr.get(19).cloned().unwrap_or(rmpv::Value::Nil);
         let input_top_logprobs_idx: rmpv::Value = arr.get(20).cloned().unwrap_or(rmpv::Value::Nil);
         let output_top_logprobs_val: rmpv::Value = arr.get(21).cloned().unwrap_or(rmpv::Value::Nil);
         let output_top_logprobs_idx: rmpv::Value = arr.get(22).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_ids_logprobs_val: rmpv::Value = arr.get(23).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_ids_logprobs_idx: rmpv::Value = arr.get(24).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_ids_logprobs_val: rmpv::Value = arr.get(25).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_ids_logprobs_idx: rmpv::Value = arr.get(26).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_entropy_val: rmpv::Value = arr.get(27).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_ids_logprobs_val: rmpv::Value =
+            arr.get(23).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_ids_logprobs_idx: rmpv::Value =
+            arr.get(24).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_ids_logprobs_val: rmpv::Value =
+            arr.get(25).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_ids_logprobs_idx: rmpv::Value =
+            arr.get(26).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_entropy_val: rmpv::Value =
+            arr.get(27).cloned().unwrap_or(rmpv::Value::Nil);
         let output_hidden_states: rmpv::Value = arr.get(28).cloned().unwrap_or(rmpv::Value::Nil);
         let routed_experts: rmpv::Value = arr.get(29).cloned().unwrap_or(rmpv::Value::Nil);
         let indexer_topk: rmpv::Value = arr.get(30).cloned().unwrap_or(rmpv::Value::Nil);
@@ -575,7 +604,8 @@ impl BatchTokenIDOutput {
         let video_tokens: rmpv::Value = arr.get(41).cloned().unwrap_or(rmpv::Value::Nil);
         let spec_verify_ct: rmpv::Value = arr.get(42).cloned().unwrap_or(rmpv::Value::Nil);
         let spec_num_correct_drafts: rmpv::Value = arr.get(43).cloned().unwrap_or(rmpv::Value::Nil);
-        let spec_correct_drafts_histogram: rmpv::Value = arr.get(44).cloned().unwrap_or(rmpv::Value::Nil);
+        let spec_correct_drafts_histogram: rmpv::Value =
+            arr.get(44).cloned().unwrap_or(rmpv::Value::Nil);
 
         Ok(Self {
             rids,
@@ -715,31 +745,34 @@ impl BatchStrOutput {
             self.spec_correct_drafts_histogram.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "BatchStrOutput";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 40: tag + 39 fields)
         if arr.len() != 40 {
-            return Err(Error::Codec(format!("expected 40 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 40 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rids: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -751,19 +784,28 @@ impl BatchStrOutput {
         let completion_tokens: rmpv::Value = arr.get(7).cloned().unwrap_or(rmpv::Value::Nil);
         let reasoning_tokens: rmpv::Value = arr.get(8).cloned().unwrap_or(rmpv::Value::Nil);
         let cached_tokens: rmpv::Value = arr.get(9).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_logprobs_val: rmpv::Value = arr.get(10).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_logprobs_idx: rmpv::Value = arr.get(11).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_logprobs_val: rmpv::Value = arr.get(12).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_logprobs_idx: rmpv::Value = arr.get(13).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_logprobs_val: rmpv::Value =
+            arr.get(10).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_logprobs_idx: rmpv::Value =
+            arr.get(11).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_logprobs_val: rmpv::Value =
+            arr.get(12).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_logprobs_idx: rmpv::Value =
+            arr.get(13).cloned().unwrap_or(rmpv::Value::Nil);
         let input_top_logprobs_val: rmpv::Value = arr.get(14).cloned().unwrap_or(rmpv::Value::Nil);
         let input_top_logprobs_idx: rmpv::Value = arr.get(15).cloned().unwrap_or(rmpv::Value::Nil);
         let output_top_logprobs_val: rmpv::Value = arr.get(16).cloned().unwrap_or(rmpv::Value::Nil);
         let output_top_logprobs_idx: rmpv::Value = arr.get(17).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_ids_logprobs_val: rmpv::Value = arr.get(18).cloned().unwrap_or(rmpv::Value::Nil);
-        let input_token_ids_logprobs_idx: rmpv::Value = arr.get(19).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_ids_logprobs_val: rmpv::Value = arr.get(20).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_ids_logprobs_idx: rmpv::Value = arr.get(21).cloned().unwrap_or(rmpv::Value::Nil);
-        let output_token_entropy_val: rmpv::Value = arr.get(22).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_ids_logprobs_val: rmpv::Value =
+            arr.get(18).cloned().unwrap_or(rmpv::Value::Nil);
+        let input_token_ids_logprobs_idx: rmpv::Value =
+            arr.get(19).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_ids_logprobs_val: rmpv::Value =
+            arr.get(20).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_ids_logprobs_idx: rmpv::Value =
+            arr.get(21).cloned().unwrap_or(rmpv::Value::Nil);
+        let output_token_entropy_val: rmpv::Value =
+            arr.get(22).cloned().unwrap_or(rmpv::Value::Nil);
         let output_hidden_states: rmpv::Value = arr.get(23).cloned().unwrap_or(rmpv::Value::Nil);
         let routed_experts: rmpv::Value = arr.get(24).cloned().unwrap_or(rmpv::Value::Nil);
         let indexer_topk: rmpv::Value = arr.get(25).cloned().unwrap_or(rmpv::Value::Nil);
@@ -780,7 +822,8 @@ impl BatchStrOutput {
         let video_tokens: rmpv::Value = arr.get(36).cloned().unwrap_or(rmpv::Value::Nil);
         let spec_verify_ct: rmpv::Value = arr.get(37).cloned().unwrap_or(rmpv::Value::Nil);
         let spec_num_correct_drafts: rmpv::Value = arr.get(38).cloned().unwrap_or(rmpv::Value::Nil);
-        let spec_correct_drafts_histogram: rmpv::Value = arr.get(39).cloned().unwrap_or(rmpv::Value::Nil);
+        let spec_correct_drafts_histogram: rmpv::Value =
+            arr.get(39).cloned().unwrap_or(rmpv::Value::Nil);
 
         Ok(Self {
             rids,
@@ -861,31 +904,34 @@ impl BatchEmbeddingOutput {
             self.pooled_hidden_states.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "BatchEmbeddingOutput";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 13: tag + 12 fields)
         if arr.len() != 13 {
-            return Err(Error::Codec(format!("expected 13 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 13 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rids: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -933,8 +979,7 @@ impl ClearHiCacheReqInput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -956,8 +1001,7 @@ impl ClearHiCacheReqOutput {
             self.success.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -979,31 +1023,34 @@ impl FlushCacheReqInput {
             self.timeout_s.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "FlushCacheReqInput";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 4: tag + 3 fields)
         if arr.len() != 4 {
-            return Err(Error::Codec(format!("expected 4 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 4 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rid: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -1037,31 +1084,34 @@ impl FlushCacheReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "FlushCacheReqOutput";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 5: tag + 4 fields)
         if arr.len() != 5 {
-            return Err(Error::Codec(format!("expected 5 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 5 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rid: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -1101,8 +1151,7 @@ impl AddExternalCorpusReqInput {
             self.token_chunks.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1130,8 +1179,7 @@ impl AddExternalCorpusReqOutput {
             self.loaded_token_count.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1153,8 +1201,7 @@ impl RemoveExternalCorpusReqInput {
             self.corpus_id.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1178,8 +1225,7 @@ impl RemoveExternalCorpusReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1199,8 +1245,7 @@ impl ListExternalCorporaReqInput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1226,8 +1271,7 @@ impl ListExternalCorporaReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1255,8 +1299,7 @@ impl AttachHiCacheStorageReqInput {
             self.hicache_write_policy.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1280,8 +1323,7 @@ impl AttachHiCacheStorageReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1301,8 +1343,7 @@ impl DetachHiCacheStorageReqInput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1326,8 +1367,7 @@ impl DetachHiCacheStorageReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1349,8 +1389,7 @@ impl PauseGenerationReqInput {
             self.mode.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1372,8 +1411,7 @@ impl ContinueGenerationReqInput {
             self.torch_empty_cache.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1395,8 +1433,7 @@ impl TokenizerWorkerRegistrationReq {
             self.worker_ipc_name.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1418,8 +1455,7 @@ impl PauseContinueBroadcastReq {
             self.is_pause.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1461,8 +1497,7 @@ impl UpdateWeightFromDiskReqInput {
             self.manifest.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1488,8 +1523,7 @@ impl UpdateWeightFromDiskReqOutput {
             self.num_paused_requests.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1527,8 +1561,7 @@ impl UpdateWeightsFromDistributedReqInput {
             self.torch_empty_cache.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1552,8 +1585,7 @@ impl UpdateWeightsFromDistributedReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1587,8 +1619,7 @@ impl UpdateWeightsFromTensorReqInput {
             self.torch_empty_cache.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1612,8 +1643,7 @@ impl UpdateWeightsFromTensorReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1645,8 +1675,7 @@ impl InitWeightsSendGroupForRemoteInstanceReqInput {
             self.backend.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1674,8 +1703,7 @@ impl UpdateWeightsFromIPCReqInput {
             self.torch_empty_cache.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1699,8 +1727,7 @@ impl UpdateWeightsFromIPCReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1724,8 +1751,7 @@ impl InitWeightsSendGroupForRemoteInstanceReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1751,8 +1777,7 @@ impl SendWeightsToRemoteInstanceReqInput {
             self.group_name.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1776,8 +1801,7 @@ impl SendWeightsToRemoteInstanceReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1797,8 +1821,7 @@ impl UpdateExpertBackupReq {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1826,8 +1849,7 @@ impl BackupDramReq {
             self.buffer_size.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1859,8 +1881,7 @@ impl InitWeightsUpdateGroupReqInput {
             self.backend.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1884,8 +1905,7 @@ impl InitWeightsUpdateGroupReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1907,8 +1927,7 @@ impl DestroyWeightsUpdateGroupReqInput {
             self.group_name.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1932,8 +1951,7 @@ impl DestroyWeightsUpdateGroupReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1957,8 +1975,7 @@ impl UpdateWeightVersionReqInput {
             self.abort_all_requests.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -1982,8 +1999,7 @@ impl GetWeightsByNameReqInput {
             self.truncate_size.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2005,8 +2021,7 @@ impl GetWeightsByNameReqOutput {
             self.parameter.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2028,8 +2043,7 @@ impl ReleaseMemoryOccupationReqInput {
             self.tags.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2049,8 +2063,7 @@ impl ReleaseMemoryOccupationReqOutput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2072,8 +2085,7 @@ impl ResumeMemoryOccupationReqInput {
             self.tags.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2093,8 +2105,7 @@ impl ResumeMemoryOccupationReqOutput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2116,8 +2127,7 @@ impl CheckWeightsReqInput {
             self.action.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2143,8 +2153,7 @@ impl CheckWeightsReqOutput {
             self.payload.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2166,8 +2175,7 @@ impl SlowDownReqInput {
             self.forward_sleep_time.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2187,8 +2195,7 @@ impl SlowDownReqOutput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2214,31 +2221,34 @@ impl AbortReq {
             self.abort_message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "AbortReq";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 6: tag + 5 fields)
         if arr.len() != 6 {
-            return Err(Error::Codec(format!("expected 6 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 6 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rid: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -2274,8 +2284,7 @@ impl ActiveRanksOutput {
             self.status.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2295,8 +2304,7 @@ impl GetInternalStateReq {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2318,8 +2326,7 @@ impl GetInternalStateReqOutput {
             self.internal_state.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2341,8 +2348,7 @@ impl SetInternalStateReq {
             self.server_args.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2366,8 +2372,7 @@ impl SetInternalStateReqOutput {
             self.server_args.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2411,31 +2416,34 @@ impl ProfileReq {
             self.profile_stages.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 
     pub fn decode(data: &[u8]) -> Result<Self, Error> {
         use rmpv::Value;
         const TAG: &str = "ProfileReq";
-        let val: Value = rmpv::decode::read_value(&mut &data[..])
-            .map_err(|e| Error::Codec(e.to_string()))?;
-        let arr = val.as_array()
+        let val: Value =
+            rmpv::decode::read_value(&mut &data[..]).map_err(|e| Error::Codec(e.to_string()))?;
+        let arr = val
+            .as_array()
             .ok_or_else(|| Error::Codec("expected array".to_string()))?;
 
         // Validate tag (index 0)
-        let tag = arr.first()
+        let tag = arr
+            .first()
             .and_then(|v| v.as_str())
             .ok_or_else(|| Error::Codec("missing tag".to_string()))?;
-            if tag != TAG {
-                return Err(Error::Codec(format!(
-                    "expected tag {TAG}, got {tag}")));
-            }
+        if tag != TAG {
+            return Err(Error::Codec(format!("expected tag {TAG}, got {tag}")));
+        }
 
         // Validate array length (expected 15: tag + 14 fields)
         if arr.len() != 15 {
-            return Err(Error::Codec(format!("expected 15 elements, got {}", arr.len())));
+            return Err(Error::Codec(format!(
+                "expected 15 elements, got {}",
+                arr.len()
+            )));
         }
 
         let rid: rmpv::Value = arr.get(1).cloned().unwrap_or(rmpv::Value::Nil);
@@ -2491,8 +2499,7 @@ impl ProfileReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2512,8 +2519,7 @@ impl FreezeGCReq {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2533,8 +2539,7 @@ impl ShutdownReq {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2570,8 +2575,7 @@ impl ConfigureLoggingReq {
             self.dump_requests_exclude_meta_keys.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2599,8 +2603,7 @@ impl OpenSessionReqInput {
             self.timeout.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2622,8 +2625,7 @@ impl CloseSessionReqInput {
             self.session_id.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2647,8 +2649,7 @@ impl OpenSessionReqOutput {
             self.success.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2668,8 +2669,7 @@ impl HealthCheckOutput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2691,8 +2691,7 @@ impl ExpertDistributionReq {
             self.action.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2712,8 +2711,7 @@ impl ExpertDistributionReqOutput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2739,8 +2737,7 @@ impl ParseFunctionCallReq {
             self.tool_call_parser.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2766,8 +2763,7 @@ impl SeparateReasoningReqInput {
             self.return_blocks.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2791,8 +2787,7 @@ impl VertexGenerateReqInput {
             self.parameters.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2816,8 +2811,7 @@ impl RpcReqInput {
             self.parameters.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2841,8 +2835,7 @@ impl RpcReqOutput {
             self.message.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2870,8 +2863,7 @@ impl LoadLoRAAdapterReqInput {
             self.lora_id.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2895,8 +2887,7 @@ impl UnloadLoRAAdapterReqInput {
             self.lora_id.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2930,8 +2921,7 @@ impl LoadLoRAAdapterFromTensorsReqInput {
             self.load_format.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2957,8 +2947,7 @@ impl LoRAUpdateOutput {
             self.loaded_adapters.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -2980,8 +2969,7 @@ impl BlockReqInput {
             self.req_type.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3005,8 +2993,7 @@ impl GetLoadsReqInput {
             self.dp_rank.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3062,8 +3049,7 @@ impl GetLoadsReqOutput {
             self.queues.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3085,8 +3071,7 @@ impl SetInjectDumpMetadataReqInput {
             self.dump_metadata.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3108,8 +3093,7 @@ impl SetInjectDumpMetadataReqOutput {
             self.success.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3129,8 +3113,7 @@ impl LazyDumpTensorsReqInput {
             self.http_worker_ipc.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3152,8 +3135,7 @@ impl LazyDumpTensorsReqOutput {
             self.success.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3177,8 +3159,7 @@ impl DumperControlReqInput {
             self.body.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }
@@ -3204,8 +3185,7 @@ impl DumperControlReqOutput {
             self.error.clone(),
         ]);
         let mut buf = Vec::new();
-        rmpv::encode::write_value(&mut buf, &arr)
-            .map_err(|e| Error::Codec(e.to_string()))?;
+        rmpv::encode::write_value(&mut buf, &arr).map_err(|e| Error::Codec(e.to_string()))?;
         Ok(buf)
     }
 }

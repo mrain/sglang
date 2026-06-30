@@ -23,7 +23,7 @@ Status legend:
 | Phase | Status | Purpose | Depends On |
 | --- | --- | --- | --- |
 | P0 | `[x]` | Contract capture, schema snapshot, fixtures, comparison harness | none |
-| P1 | `[ ]` | Rust skeleton, schema codec, IPC compatibility | P0 |
+| P1 | `[x]` | Rust skeleton, schema codec, IPC compatibility | P0 |
 | P2 | `[ ]` | Single `/generate`, abort, response wait, FanOut infrastructure | P1 |
 | P3 | `[ ]` | Batch, embedding, logprobs, full sampling params | P2 |
 | P4 | `[ ]` | Low-risk control endpoints on FanOut | P1, P2 |
@@ -74,33 +74,33 @@ Deliverables:
 
 - [x] `rust/sglang-server` module structure aligned with `plan.md` (schema module
   added, rest of crate structure exists).
-- [ ] PyO3 `TokenizerManager` constructor.
-- [ ] Typed config views:
-  - [ ] `ServerArgsView`
-  - [ ] `ModelConfigView`
-  - [ ] `PortArgsView`
+- [x] PyO3 `TokenizerManager` constructor (builds from JSON config, boots runtime threads).
+- [x] Typed config views:
+  - [x] `ServerArgsView`
+  - [x] `ModelConfigView`
+  - [x] `PortArgsView`
 - [x] `msgspec` tagged-array codec (90 structs, encode for all, decode for
   critical structs, round-trip tests passing).
-- [ ] `PickleWrapper` opaque payload round-trip (struct defined, encode/decode
-  work generically).
+- [ ] `PickleWrapper` opaque payload round-trip.
 - [ ] `array("q")` token ID compatibility.
-- [ ] ZMQ send-to-Scheduler wrapper.
-- [ ] ZMQ receive-from-DetokenizerManager wrapper.
-- [ ] Dispatcher skeleton.
-- [ ] Pending response table.
-- [ ] `ReqState` table skeleton.
-- [ ] No-op/default observability carriers.
-- [ ] `ServerStatus` startup/running state.
+- [ ] ZMQ send-to-Scheduler wrapper (ring-based path exists via `Server::recv_requests`).
+- [ ] ZMQ receive-from-DetokenizerManager wrapper (ring-based path exists via `Server::push_chunk`).
+- [x] Dispatcher skeleton (`state::Dispatcher` routes by tag).
+- [x] Pending response table (`state::PendingResponseTable`).
+- [x] `ReqState` table skeleton (`state::ReqState` with notify/wakeup).
+- [x] No-op/default observability carriers (`observability::TimeStats`, `RequestLogger`, `MetricsCollector`).
+- [x] `ServerStatus` startup/running state.
 
 Exit gate:
 
-- [x] Rust encodes/decodes all P0 IPC fixture structs (8 round-trip tests pass
-  covering generate request, abort, streaming output, token output, embedding,
-  empty fields).
-- [ ] Python decodes Rust-produced Scheduler request objects.
-- [ ] Rust decodes Python-produced output objects.
-- [ ] Constructor smoke test works from Python startup.
-- [ ] Schema field order mismatch fails test/build (codegen + snapshot check).
+- [x] Rust encodes/decodes all P0 IPC fixture structs (15 round-trip tests pass).
+- [ ] Python decodes Rust-produced Scheduler request objects (ring path exists
+  via `Server::recv_requests`).
+- [ ] Rust decodes Python-produced output objects (egress path exists via
+  `Server::push_chunk`).
+- [x] Constructor smoke test works from Python startup (PyO3 `TokenizerManager::new`
+  builds and runs in `test_integration.py`).
+- [x] Schema field order mismatch fails test/build (codegen + snapshot check).
 
 ## P2: Single Generate and FanOut Infrastructure
 

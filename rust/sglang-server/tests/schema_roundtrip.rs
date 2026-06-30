@@ -24,9 +24,11 @@ fn repo_root() -> std::path::PathBuf {
 /// Read a fixture, decode with the correct Rust struct, re-encode, compare bytes.
 fn roundtrip_fixture(name: &str) {
     let repo_root = repo_root();
-    let path = repo_root.join(FIXTURE_DIR).join(format!("{}.msgpack", name));
-    let fixture_bytes = std::fs::read(&path)
-        .unwrap_or_else(|e| panic!("failed to read fixture {:?}: {}", path, e));
+    let path = repo_root
+        .join(FIXTURE_DIR)
+        .join(format!("{}.msgpack", name));
+    let fixture_bytes =
+        std::fs::read(&path).unwrap_or_else(|e| panic!("failed to read fixture {:?}: {}", path, e));
 
     let re_encoded = match name {
         "single_text_generate"
@@ -39,8 +41,8 @@ fn roundtrip_fixture(name: &str) {
             obj.encode().expect("encode")
         }
         "abort_request" => {
-            let obj = sglang_server::schema::AbortReq::decode(&fixture_bytes)
-                .expect("decode AbortReq");
+            let obj =
+                sglang_server::schema::AbortReq::decode(&fixture_bytes).expect("decode AbortReq");
             obj.encode().expect("encode")
         }
         "flush_cache_request" => {
@@ -80,9 +82,12 @@ fn roundtrip_fixture(name: &str) {
     };
 
     assert_eq!(
-        fixture_bytes, re_encoded,
+        fixture_bytes,
+        re_encoded,
         "{}: bytes differ\n  original={} bytes\n  reencoded={} bytes",
-        name, fixture_bytes.len(), re_encoded.len(),
+        name,
+        fixture_bytes.len(),
+        re_encoded.len(),
     );
 }
 
@@ -92,51 +97,88 @@ fn roundtrip_fixture(name: &str) {
 fn all_fixtures_exist() {
     let repo_root = repo_root();
     let fixture_dir = repo_root.join(FIXTURE_DIR);
-    assert!(fixture_dir.exists(), "fixture dir not found: {:?}", fixture_dir);
-    assert!(fixture_dir.join("manifest.json").exists(), "manifest.json not found");
+    assert!(
+        fixture_dir.exists(),
+        "fixture dir not found: {:?}",
+        fixture_dir
+    );
+    assert!(
+        fixture_dir.join("manifest.json").exists(),
+        "manifest.json not found"
+    );
 }
 
 #[test]
-fn roundtrip_single_text_generate() { roundtrip_fixture("single_text_generate"); }
+fn roundtrip_single_text_generate() {
+    roundtrip_fixture("single_text_generate");
+}
 
 #[test]
-fn roundtrip_input_ids_generate() { roundtrip_fixture("input_ids_generate"); }
+fn roundtrip_input_ids_generate() {
+    roundtrip_fixture("input_ids_generate");
+}
 
 #[test]
-fn roundtrip_abort_request() { roundtrip_fixture("abort_request"); }
+fn roundtrip_abort_request() {
+    roundtrip_fixture("abort_request");
+}
 
 #[test]
-fn roundtrip_flush_cache() { roundtrip_fixture("flush_cache_request"); }
+fn roundtrip_flush_cache() {
+    roundtrip_fixture("flush_cache_request");
+}
 
 #[test]
-fn roundtrip_profile() { roundtrip_fixture("profile_request"); }
+fn roundtrip_profile() {
+    roundtrip_fixture("profile_request");
+}
 
 #[test]
-fn roundtrip_streaming_chunk() { roundtrip_fixture("streaming_output_chunk"); }
+fn roundtrip_streaming_chunk() {
+    roundtrip_fixture("streaming_output_chunk");
+}
 
 #[test]
-fn roundtrip_final_streaming() { roundtrip_fixture("final_streaming_output"); }
+fn roundtrip_final_streaming() {
+    roundtrip_fixture("final_streaming_output");
+}
 
 #[test]
-fn roundtrip_logprobs() { roundtrip_fixture("logprobs_output"); }
+fn roundtrip_logprobs() {
+    roundtrip_fixture("logprobs_output");
+}
 
 #[test]
-fn roundtrip_token_id_output() { roundtrip_fixture("token_id_output"); }
+fn roundtrip_token_id_output() {
+    roundtrip_fixture("token_id_output");
+}
 
 #[test]
-fn roundtrip_embedding_request() { roundtrip_fixture("embedding_request"); }
+fn roundtrip_embedding_request() {
+    roundtrip_fixture("embedding_request");
+}
 
 #[test]
-fn roundtrip_embedding_output() { roundtrip_fixture("embedding_output"); }
+fn roundtrip_embedding_output() {
+    roundtrip_fixture("embedding_output");
+}
 
 #[test]
-fn roundtrip_empty() { roundtrip_fixture("empty_fields"); }
+fn roundtrip_empty() {
+    roundtrip_fixture("empty_fields");
+}
 
 #[test]
-fn roundtrip_cached_tokens() { roundtrip_fixture("cached_tokens_details"); }
+fn roundtrip_cached_tokens() {
+    roundtrip_fixture("cached_tokens_details");
+}
 
 #[test]
-fn roundtrip_reasoner() { roundtrip_fixture("reasoner_request"); }
+fn roundtrip_reasoner() {
+    roundtrip_fixture("reasoner_request");
+}
 
 #[test]
-fn roundtrip_session() { roundtrip_fixture("session_request"); }
+fn roundtrip_session() {
+    roundtrip_fixture("session_request");
+}

@@ -167,6 +167,11 @@ def generate():
 
     content = "\n".join(lines)
     mod_path.write_text(content)
+
+    # Run rustfmt on generated code; fail hard if missing or broken
+    import subprocess
+    subprocess.run(["rustfmt", str(mod_path)], check=True)
+
     print(f"Wrote {mod_path} ({len(lines)} lines, {len(names)} structs)")
 
 

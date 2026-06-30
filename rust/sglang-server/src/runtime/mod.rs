@@ -42,6 +42,9 @@ pub struct RuntimeConfig {
     pub channel_cap: usize,
     /// If true, pin pools to distinct CPU cores via `core_affinity`.
     pub pin_cores: bool,
+    /// Startup handshake: API server sends `Ok(())` on successful bind,
+    /// `Err(msg)` on failure. `None` → no handshake (fire-and-forget startup).
+    pub startup_tx: Option<std::sync::mpsc::Sender<Result<(), String>>>,
     /// Explicit CPU core ids the pools may pin to (e.g. this rank's NUMA-local
     /// cores minus the scheduler's reserved launch cores). `None` → use every
     /// core this process is allowed on (`sched_getaffinity`).
@@ -72,6 +75,7 @@ impl Default for RuntimeConfig {
             cores: None,
             tokenizer_path: None,
             revision: None,
+            startup_tx: None,
             server_args: Arc::new(ServerArgs::default()),
         }
     }
@@ -365,6 +369,7 @@ pub fn start(cfg: RuntimeConfig) -> Result<Runtime, String> {
                     id_gen,
                     cfg.channel_cap,
                     cfg.server_args.clone(),
+                    cfg.startup_tx,
                 ));
             })
             .expect("spawn api runtime");

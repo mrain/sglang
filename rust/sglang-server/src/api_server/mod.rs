@@ -66,6 +66,7 @@ pub async fn serve(
     id_gen: Arc<RequestIdGen>,
     egress_buf: usize,
     server_args: Arc<ServerArgs>,
+    startup_tx: Option<std::sync::mpsc::Sender<Result<(), String>>>,
 ) {
     let chat = openai::load_chat_formatter(&server_args).map(ChatFormatter);
     let state = AppState {
@@ -93,12 +94,20 @@ pub async fn serve(
 
     match tokio::net::TcpListener::bind(bind).await {
         Ok(listener) => {
+            if let Some(tx) = startup_tx {
+                let _ = tx.send(Ok(()));
+            }
             tracing::info!(%bind, "sglang-server api listening");
             if let Err(e) = axum::serve(listener, app).await {
                 tracing::error!(error = %e, "axum serve exited");
             }
         }
-        Err(e) => tracing::error!(error = %e, %bind, "failed to bind api server"),
+        Err(e) => {
+            if let Some(tx) = startup_tx {
+                let _ = tx.send(Err(format!("failed to bind {bind}: {e}")));
+            }
+            tracing::error!(error = %e, %bind, "failed to bind api server");
+        }
     }
 }
 

@@ -99,6 +99,48 @@ def test_rust_roundtrip():
             print(f"         {line.strip()}")
 
 
+def test_pyo3_constructor():
+    """PyO3 TokenizerManager can be constructed from Python (rebuilds first)."""
+    import json
+    import shutil
+
+    # Rebuild to ensure test uses current source code
+    build = subprocess.run(
+        ["cargo", "build", "--release"],
+        capture_output=True, text=True, cwd=RUST_CRATE,
+    )
+    if build.returncode != 0:
+        check("PyO3 constructor", False, f"cargo build --release failed:\n{build.stderr[-300:]}")
+        return
+
+    so_path = RUST_CRATE / "target" / "release" / "libsglang_server.so"
+    target_so = RUST_CRATE / "target" / "release" / "sglang_server.so"
+    # Always copy to ensure fresh extension (overwrite stale file)
+    shutil.copy2(so_path, target_so)
+
+    sys.path.insert(0, str(RUST_CRATE / "target" / "release"))
+
+    try:
+        import sglang_server as _
+    except ImportError as e:
+        check("PyO3 constructor", False, f"Import failed: {e}")
+        return
+
+    config = {
+        "model_path": "test-model", "served_model_name": "test-model",
+        "host": "127.0.0.1", "port": 0,
+        "skip_tokenizer_init": True,
+        "tokenizer_worker_num": 1, "detokenizer_worker_num": 1,
+        "model_config": {"model": "test-model", "context_len": 4096, "is_generation": True},
+    }
+    try:
+        tm = _.TokenizerManager(json.dumps(config))
+        check("PyO3 constructor", True)
+        tm.shutdown()
+    except Exception as e:
+        check("PyO3 constructor", False, str(e))
+
+
 def test_codegen_deterministic():
     """Re-running codegen must produce identical output."""
     old_path = RUST_CRATE / "src" / "schema" / "mod.rs"
@@ -121,6 +163,7 @@ def main():
         ("Fixture msgspec validity", test_fixtures_valid_msgspec),
         ("Schema snapshot up to date", test_schema_snapshot),
         ("Rust round-trip tests", test_rust_roundtrip),
+        ("PyO3 constructor", test_pyo3_constructor),
         ("Codegen determinism", test_codegen_deterministic),
     ]
     for name, fn in tests:
