@@ -114,6 +114,7 @@ pub(super) async fn openai_completions(
         // Single prompt (guaranteed by the guard above).
         let (text, input_ids) = prompts.into_iter().next().unwrap();
         let payload = GeneratePayload {
+            priority: 0,
             text,
             input_ids,
             stream,
@@ -176,6 +177,7 @@ pub(super) async fn openai_completions(
                 text,
                 input_ids,
                 stream: false,
+                priority: 0,
                 sampling_params: Some(sampling_params.clone()),
                 extra: Default::default(),
             };
@@ -418,6 +420,7 @@ pub(super) async fn openai_chat_completions(
         text: Some(prompt),
         input_ids: None,
         stream,
+        priority: 0,
         sampling_params: Some(chat_sampling_params(&req)),
         extra: Default::default(),
     };

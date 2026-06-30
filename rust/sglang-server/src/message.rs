@@ -136,6 +136,9 @@ pub struct GeneratePayload {
     pub input_ids: Option<Vec<i32>>,
     #[serde(default)]
     pub stream: bool,
+    /// Request priority (default 0 = normal).
+    #[serde(default)]
+    pub priority: i64,
     /// Opaque sampling params, carried through to the scheduler untouched.
     #[serde(default)]
     pub sampling_params: Option<rmpv::Value>,
@@ -154,6 +157,16 @@ impl GeneratePayload {
     /// always false until mm fields are wired in.
     pub fn has_multimodal(&self) -> bool {
         false
+    }
+
+    /// Extract `max_new_tokens` from the opaque sampling params, if set.
+    pub fn max_new_tokens(&self) -> Option<u64> {
+        self.sampling_params.as_ref().and_then(|sp| {
+            sp.as_map()?
+                .iter()
+                .find(|(k, _)| k.as_str() == Some("max_new_tokens"))
+                .and_then(|(_, v)| v.as_u64())
+        })
     }
 }
 

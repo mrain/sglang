@@ -94,3 +94,81 @@ impl ReqState {
         self.first_token_at.get_or_insert_with(Instant::now);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_state() -> ReqState {
+        ReqState::new(rmpv::Value::Nil)
+    }
+
+    #[test]
+    fn test_push_frame_notifies_and_not_finished() {
+        let mut s = make_state();
+        s.push_chunk(ResponseChunk::Frame(rmpv::Value::from(1)));
+        assert!(!s.finished);
+        assert_eq!(s.out_queue.len(), 1);
+    }
+
+    #[test]
+    fn test_push_done_marks_finished() {
+        let mut s = make_state();
+        s.push_chunk(ResponseChunk::Done(rmpv::Value::from(2)));
+        assert!(s.finished);
+    }
+
+    #[test]
+    fn test_drain_and_remove_after_finished() {
+        let mut s = make_state();
+        s.push_chunk(ResponseChunk::Frame(rmpv::Value::from(10)));
+        s.push_chunk(ResponseChunk::Done(rmpv::Value::from(20)));
+        assert_eq!(s.out_queue.len(), 2);
+        assert!(s.finished);
+
+        // Drain all
+        while s.out_queue.pop_front().is_some() {}
+        assert!(s.out_queue.is_empty());
+        // State is cleaned up — finished flag stays true for observability
+        assert!(s.finished);
+    }
+
+    #[test]
+    fn test_append_and_get_text() {
+        let mut s = make_state();
+        s.append_text("Hello ");
+        s.append_text("World");
+        let text = s.get_text();
+        assert_eq!(text, "Hello World");
+        assert!(s.text_chunks.is_empty());
+    }
+
+    #[test]
+    fn test_get_text_idempotent() {
+        let mut s = make_state();
+        s.append_text("abc");
+        let t1 = s.get_text();
+        let t2 = s.get_text();
+        assert_eq!(t1, "abc");
+        assert_eq!(t2, "abc");
+    }
+
+    #[test]
+    fn test_first_token_timestamp() {
+        let mut s = make_state();
+        assert!(s.first_token_at.is_none());
+        s.observe_first_token();
+        assert!(s.first_token_at.is_some());
+        // Second call should not change timestamp
+        let ts = s.first_token_at;
+        s.observe_first_token();
+        assert_eq!(s.first_token_at, ts);
+    }
+
+    #[test]
+    fn test_empty_queue() {
+        let s = make_state();
+        assert!(s.out_queue.is_empty());
+        assert!(!s.finished);
+    }
+}

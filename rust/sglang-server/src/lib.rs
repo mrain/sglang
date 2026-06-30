@@ -297,6 +297,16 @@ impl TokenizerManager {
         py.detach(|| self.rt.egress.try_push(bytes))
     }
 
+    /// Send an abort request through the ingress ring to the scheduler.
+    /// The scheduler will remove the request and echo back an echo so the
+    /// TM can clean up local state.
+    fn abort_request(&self, rid: &str) -> PyResult<bool> {
+        use crate::message::control_req_msgpack;
+        let header = control_req_msgpack("AbortReq", rid)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(self.rt.push_control_to_ingress(header))
+    }
+
     /// Signal all threads to stop.
     fn shutdown(&self) {
         self.rt.request_shutdown();

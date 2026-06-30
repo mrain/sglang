@@ -216,6 +216,7 @@ impl ServerArgs {
 /// `ingress` and `egress`. Dropping joins all threads via `shutdown`.
 pub struct Runtime {
     pub ingress: IngressConsumer,
+    pub ingress_tx: IngressProducer,
     pub egress: EgressProducer,
     /// Join handles kept alive for the lifetime of the runtime; threads are
     /// detached daemons that exit when their channels close on shutdown.
@@ -228,6 +229,16 @@ impl Runtime {
     pub fn request_shutdown(&self) {
         self.shutdown
             .store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    /// Push a control message (already msgpack-encoded `[tag, rid, nil]`) into
+    /// the ingress ring so the scheduler receives it like any other control request.
+    /// Returns `false` on backpressure.
+    pub fn push_control_to_ingress(&self, header: bytes::Bytes) -> bool {
+        self.ingress_tx.try_push(crate::message::IngressMsg {
+            header,
+            ids: bytes::Bytes::new(),
+        })
     }
 }
 
@@ -242,6 +253,7 @@ pub fn start(cfg: RuntimeConfig) -> Result<Runtime, String> {
     // --- rings (Rust ↔ Python) ---
     let (ingress_tx, ingress_rx): (IngressProducer, IngressConsumer) =
         ingress_ring(cfg.ingress_ring_cap);
+    let py_ingress_tx = ingress_tx.clone();
     let (egress_tx, egress_rx): (EgressProducer, EgressConsumer) = egress_ring(cfg.egress_ring_cap);
 
     // --- inter-stage channels ---
@@ -338,7 +350,13 @@ pub fn start(cfg: RuntimeConfig) -> Result<Runtime, String> {
         let mut parts = Some((tm_rx, ingress_tx)); // moved into the single worker
         spawn_pool("tm-ingress", cores, 1, &mut threads, |_| {
             let (tm_rx, ingress_tx) = parts.take().unwrap();
-            tokenizer_manager::Ingress::new(tm_rx, senders.clone(), ingress_tx, skip_tokenizer_init)
+            tokenizer_manager::Ingress::new(
+                tm_rx,
+                senders.clone(),
+                ingress_tx,
+                skip_tokenizer_init,
+                cfg.server_args.context_len().unwrap_or(0),
+            )
         });
     }
 
@@ -378,6 +396,7 @@ pub fn start(cfg: RuntimeConfig) -> Result<Runtime, String> {
 
     Ok(Runtime {
         ingress: ingress_rx,
+        ingress_tx: py_ingress_tx,
         egress: egress_tx,
         threads,
         shutdown,

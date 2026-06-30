@@ -37,6 +37,8 @@ pub struct Ingress {
     senders: Senders,
     ingress: IngressProducer,
     skip_tokenizer_init: bool,
+    /// Max model context length (from model_config.context_len). 0 = no limit.
+    context_len: u64,
 }
 
 impl Ingress {
@@ -45,12 +47,14 @@ impl Ingress {
         senders: Senders,
         ingress: IngressProducer,
         skip_tokenizer_init: bool,
+        context_len: u64,
     ) -> Self {
         Self {
             rx,
             senders,
             ingress,
             skip_tokenizer_init,
+            context_len,
         }
     }
 }
@@ -70,7 +74,7 @@ impl Ingress {
     /// Validate a fresh request and route it onto the correct ingress branch.
     fn on_ingress(&self, mut req: Request) {
         // Received → Validating, plus payload validation; reject invalid requests.
-        if let Err(e) = validate(&mut req, self.skip_tokenizer_init) {
+        if let Err(e) = validate(&mut req, self.skip_tokenizer_init, self.context_len) {
             fail(&mut req, e);
             return;
         }
@@ -180,8 +184,26 @@ impl Ingress {
 
     /// A request returned from the Tokenizer pool with `input_ids` filled in.
     fn on_tokenized(&self, mut req: Request) {
-        // Tokenizing → Queued
+        // Tokenizing → Queued — now input_ids is filled, recheck context length
         let _ = req.state.apply(Event::TokenizeDone);
+
+        if self.context_len > 0
+            && let RequestKind::Generate(g) = &req.kind
+        {
+            let input_len = g.input_ids.as_ref().map_or(0, |ids| ids.len() as u64);
+            let max_new = g.payload.max_new_tokens().unwrap_or(128);
+            if input_len + max_new > self.context_len {
+                fail(
+                    &mut req,
+                    Error::Tokenize(format!(
+                        "tokenized input ({} tokens) + max_new_tokens ({}) exceeds context_len ({})",
+                        input_len, max_new, self.context_len,
+                    )),
+                );
+                return;
+            }
+        }
+
         self.push_to_ring(req);
     }
 
@@ -246,7 +268,7 @@ impl Ingress {
 /// *must* already carry token ids; a text-only request is rejected here rather
 /// than being silently byte-encoded by the stub tokenizer. Control requests
 /// carry no token ids and are exempt.
-fn validate(req: &mut Request, skip_tokenizer_init: bool) -> Result<(), Error> {
+fn validate(req: &mut Request, skip_tokenizer_init: bool, context_len: u64) -> Result<(), Error> {
     // Received → Validating
     let _ = req
         .state
@@ -259,6 +281,24 @@ fn validate(req: &mut Request, skip_tokenizer_init: bool) -> Result<(), Error> {
         return Err(Error::Tokenize(
             "skip_tokenizer_init is set: request must provide input_ids".into(),
         ));
+    }
+
+    // Context length check (generate requests only).
+    if context_len > 0
+        && let RequestKind::Generate(g) = &req.kind
+    {
+        let input_len = g
+            .payload
+            .input_ids
+            .as_ref()
+            .map_or(0, |ids| ids.len() as u64);
+        let max_new_tokens = g.payload.max_new_tokens().unwrap_or(128);
+        if input_len + max_new_tokens > context_len {
+            return Err(Error::Tokenize(format!(
+                "input ({} tokens) + max_new_tokens ({}) exceeds context_len ({})",
+                input_len, max_new_tokens, context_len,
+            )));
+        }
     }
 
     Ok(())

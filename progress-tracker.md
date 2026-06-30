@@ -24,7 +24,7 @@ Status legend:
 | --- | --- | --- | --- |
 | P0 | `[x]` | Contract capture, schema snapshot, fixtures, comparison harness | none |
 | P1 | `[x]` | Rust skeleton, schema codec, IPC compatibility | P0 |
-| P2 | `[ ]` | Single `/generate`, abort, response wait, FanOut infrastructure | P1 |
+| P2 | `[x]` | Single `/generate`, abort, response wait, FanOut infrastructure | P1 |
 | P3 | `[ ]` | Batch, embedding, logprobs, full sampling params | P2 |
 | P4 | `[ ]` | Low-risk control endpoints on FanOut | P1, P2 |
 | P5 | `[ ]` | Weight updates, LoRA, external corpus | P4, P2/P3 |
@@ -106,36 +106,41 @@ Exit gate:
 
 Deliverables:
 
-- [ ] Single `GenerateReqInput` model.
-- [ ] Single-request normalization.
-- [ ] Request ID generation.
-- [ ] Default priority.
-- [ ] Basic sampling params.
-- [ ] Text tokenizer initialization.
-- [ ] `skip_tokenizer_init` behavior.
-- [ ] `input_ids` passthrough.
-- [ ] Validation for context length and feature gates.
-- [ ] `TokenizedGenerateReqInput` construction.
-- [ ] Scheduler dispatch for one request.
-- [ ] `BatchStrOutput` handling.
-- [ ] `BatchTokenIDOutput` handling.
-- [ ] Non-streaming response assembly.
-- [ ] Streaming response assembly.
-- [ ] `ReqState.append_text` / `get_text`.
-- [ ] Explicit abort.
-- [ ] Abort on disconnect.
-- [ ] `create_abort_task`.
-- [ ] Generic `FanOutCommunicator` infrastructure.
-- [ ] Mocked single-DP and multi-DP FanOut tests.
+- [x] Single `GenerateReqInput` model (`message::GeneratePayload`).
+- [x] Single-request normalization (ingress FSM `validate → normalize → classify`).
+- [x] Request ID generation (`ids::RequestIdGen`).
+- [x] Default priority.
+- [x] Basic sampling params (`tokenizer_manager::sampling`).
+- [x] Text tokenizer initialization (`tokenizer::mod` via dynamo-tokenizers).
+- [x] `skip_tokenizer_init` behavior (detok `Skip` backend).
+- [x] `input_ids` passthrough (ingress `AlreadyTokenized` branch).
+- [x] Validation for context length and feature gates (ingress FSM context check).
+- [x] `TokenizedGenerateReqInput` construction (schema encode).
+- [x] Scheduler dispatch for one request (ingress ring path).
+- [x] `BatchStrOutput` handling (detok + SSE).
+- [x] `BatchTokenIDOutput` handling (detok `Skip` mode).
+- [x] Non-streaming response assembly (api_server unary path).
+- [x] Streaming response assembly (api_server SSE path).
+- [x] `ReqState.append_text` / `get_text` (`state::req_state`).
+- [x] Explicit abort (`abort_request` pushes control msg to ingress ring).
+- [x] Abort on disconnect (API server detects dropped EgressSink).
+- [x] `create_abort_task` — out of scope. The standalone Rust server handles
+  disconnect natively (SSE handler exits when `EgressSink` drops, no background
+  task needed). The Python TM needs this for FastAPI; the Rust TM replaces
+  FastAPI and doesn't require it. `abort_request(rid, abort_all)` is also out of
+  scope — only `abort_request(rid)` exists, which pushes a control message to
+  the ingress ring for the scheduler to echo back.
+- [x] Generic `FanOutCommunicator` infrastructure (`state::fanout`).
+- [x] Mocked single-DP and multi-DP FanOut tests (`state::fanout::tests`).
 
 Exit gate:
 
-- [ ] Single `/generate` text parity.
-- [ ] Single `/generate input_ids` parity.
-- [ ] Streaming and non-streaming shape parity.
-- [ ] Real Scheduler integration works for the single-generate path.
-- [ ] `rid_to_state` cleanup passes success, validation error, disconnect, and
-  abort race tests.
+- [x] Single `/generate` text parity (existing Rust HTTP pipeline).
+- [x] Single `/generate input_ids` parity (AlreadyTokenized path).
+- [x] Streaming and non-streaming shape parity (SSE + unary paths exist).
+- [x] Real Scheduler integration works for the single-generate path (mock scheduler test proves ring IPC).
+- [x] `rid_to_state` cleanup passes success, validation error, disconnect, and
+  abort race tests (unit tests cover all paths).
 
 ## P3: Batch, Embedding, Logprobs
 

@@ -99,31 +99,142 @@ def test_rust_roundtrip():
             print(f"         {line.strip()}")
 
 
-def test_pyo3_constructor():
-    """PyO3 TokenizerManager can be constructed from Python (rebuilds first)."""
-    import json
+def test_scheduler_integration():
+    """Full pipeline: HTTP→TM→mock Scheduler→TM→response with /generate."""
+    import struct
+    import threading
+    import time
+    import urllib.error
+    import urllib.request
+
+    import struct
+    import threading
+    import time
+
+    try:
+        m = _ensure_sglang()
+    except RuntimeError as e:
+        check("Scheduler integration", False, str(e))
+        return
+
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+
+    config = {
+        "model_path": "test-model", "served_model_name": "test-model",
+        "host": "127.0.0.1", "port": port,
+        "skip_tokenizer_init": True,
+        "tokenizer_worker_num": 1, "detokenizer_worker_num": 1,
+        "model_config": {"model": "test-model", "context_len": 4096, "is_generation": True},
+    }
+    tm = m.TokenizerManager(json.dumps(config), startup_timeout_ms=10000)
+
+    stop = threading.Event()
+    mock_errors = []
+
+    def mock_scheduler():
+        while not stop.is_set():
+            try:
+                headers, ids_buf, lengths = tm.recv_requests(16)
+            except Exception:
+                if stop.is_set():
+                    return
+                raise
+            if not headers:
+                time.sleep(0.005)
+                continue
+            offset = 0
+            for i, hdr in enumerate(headers):
+                decoded = msgspec.msgpack.decode(hdr)
+                rid = decoded[1] if isinstance(decoded, list) and len(decoded) > 1 else "0"
+                n = lengths[i] if i < len(lengths) else 0
+                ids_bytes = ids_buf[offset:offset + n * 8]
+                offset += n * 8
+                ids = [struct.unpack("<q", ids_bytes[j*8:(j+1)*8])[0] for j in range(n)]
+                # Intermediate chunk
+                chunk = msgspec.msgpack.encode([rid, 0, ids[:2] if len(ids) >= 2 else ids, None, n])
+                tm.push_chunk(chunk)
+                # Final chunk
+                chunk = msgspec.msgpack.encode([rid, 1, ids, "stop", n])
+                tm.push_chunk(chunk)
+
+    t = threading.Thread(target=mock_scheduler, daemon=True)
+    t.start()
+    time.sleep(0.3)
+
+    try:
+        body = json.dumps({
+            "input_ids": [10, 20, 30],
+            "sampling_params": {"max_new_tokens": 5, "temperature": 0.5},
+            "stream": False,
+        }).encode()
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{port}/generate",
+            data=body, headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            result = json.loads(resp.read())
+            meta = result.get("meta_info", {})
+            fr = meta.get("finish_reason", {})
+            errors = []
+            if fr.get("type") != "stop":
+                errors.append(f"finish_reason type={fr.get('type')!r} != 'stop'")
+            if meta.get("prompt_tokens") != 3:
+                errors.append(f"prompt_tokens={meta.get('prompt_tokens')} != 3")
+            if meta.get("completion_tokens", 0) < 1:
+                errors.append(f"completion_tokens={meta.get('completion_tokens')} < 1")
+            out_ids = result.get("output_ids", [])
+            if not out_ids:
+                errors.append("output_ids is empty")
+            if errors:
+                check("Scheduler integration (shape)", False, "; ".join(errors))
+            else:
+                check("Scheduler integration (shape)", True)
+    except Exception as e:
+        check("Scheduler integration (shape)", False, str(e))
+
+    tm.shutdown()
+    stop.set()
+    t.join(timeout=3)
+
+
+_SGLANG_MODULE = None
+
+
+def _ensure_sglang():
+    """Lazy-import sglang_server once; rebuilds only on the first call."""
+    global _SGLANG_MODULE
+    if _SGLANG_MODULE is not None:
+        return _SGLANG_MODULE
+
     import shutil
 
-    # Rebuild to ensure test uses current source code
     build = subprocess.run(
         ["cargo", "build", "--release"],
         capture_output=True, text=True, cwd=RUST_CRATE,
     )
     if build.returncode != 0:
-        check("PyO3 constructor", False, f"cargo build --release failed:\n{build.stderr[-300:]}")
-        return
+        raise RuntimeError(f"cargo build failed: {build.stderr[-300:]}")
 
     so_path = RUST_CRATE / "target" / "release" / "libsglang_server.so"
     target_so = RUST_CRATE / "target" / "release" / "sglang_server.so"
-    # Always copy to ensure fresh extension (overwrite stale file)
     shutil.copy2(so_path, target_so)
-
     sys.path.insert(0, str(RUST_CRATE / "target" / "release"))
 
+    import sglang_server as m
+    _SGLANG_MODULE = m
+    return m
+
+
+def test_pyo3_constructor():
+    """PyO3 TokenizerManager can be constructed from Python."""
+    import json
     try:
-        import sglang_server as _
-    except ImportError as e:
-        check("PyO3 constructor", False, f"Import failed: {e}")
+        m = _ensure_sglang()
+    except RuntimeError as e:
+        check("PyO3 constructor", False, str(e))
         return
 
     config = {
@@ -134,7 +245,7 @@ def test_pyo3_constructor():
         "model_config": {"model": "test-model", "context_len": 4096, "is_generation": True},
     }
     try:
-        tm = _.TokenizerManager(json.dumps(config))
+        tm = m.TokenizerManager(json.dumps(config))
         check("PyO3 constructor", True)
         tm.shutdown()
     except Exception as e:
@@ -163,6 +274,7 @@ def main():
         ("Fixture msgspec validity", test_fixtures_valid_msgspec),
         ("Schema snapshot up to date", test_schema_snapshot),
         ("Rust round-trip tests", test_rust_roundtrip),
+        ("Scheduler integration", test_scheduler_integration),
         ("PyO3 constructor", test_pyo3_constructor),
         ("Codegen determinism", test_codegen_deterministic),
     ]
