@@ -1,0 +1,68 @@
+[
+  "BatchStrOutput",
+  [
+    "test-rid-004"
+  ],
+  null,
+  [
+    "stop"
+  ],
+  [
+    " result"
+  ],
+  [
+    [
+      "q",
+      "b'\\x16X\\x00\\x00\\x00\\x00\\x00\\x00'"
+    ]
+  ],
+  [
+    100
+  ],
+  [
+    1
+  ],
+  [
+    0
+  ],
+  [
+    85
+  ],
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  [
+    {
+      "hit": 80,
+      "miss": 5,
+      "prefix": 85,
+      "spare": 0
+    }
+  ],
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+]

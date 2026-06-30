@@ -1,0 +1,87 @@
+[
+  {
+    "name": "single_text_generate",
+    "file": "single_text_generate.msgpack",
+    "size_bytes": 184
+  },
+  {
+    "name": "input_ids_generate",
+    "file": "input_ids_generate.msgpack",
+    "size_bytes": 940
+  },
+  {
+    "name": "streaming_output_chunk",
+    "file": "streaming_output_chunk.msgpack",
+    "size_bytes": 95
+  },
+  {
+    "name": "final_streaming_output",
+    "file": "final_streaming_output.msgpack",
+    "size_bytes": 100
+  },
+  {
+    "name": "token_id_output",
+    "file": "token_id_output.msgpack",
+    "size_bytes": 119
+  },
+  {
+    "name": "batch_generate",
+    "file": "batch_generate.msgpack",
+    "size_bytes": 379
+  },
+  {
+    "name": "embedding_request",
+    "file": "embedding_request.msgpack",
+    "size_bytes": 114
+  },
+  {
+    "name": "embedding_output",
+    "file": "embedding_output.msgpack",
+    "size_bytes": 69
+  },
+  {
+    "name": "pickle_wrapper",
+    "file": "pickle_wrapper.msgpack",
+    "size_bytes": 156
+  },
+  {
+    "name": "abort_request",
+    "file": "abort_request.msgpack",
+    "size_bytes": 27
+  },
+  {
+    "name": "logprobs_output",
+    "file": "logprobs_output.msgpack",
+    "size_bytes": 330
+  },
+  {
+    "name": "cached_tokens_details",
+    "file": "cached_tokens_details.msgpack",
+    "size_bytes": 127
+  },
+  {
+    "name": "empty_fields",
+    "file": "empty_fields.msgpack",
+    "size_bytes": 87
+  },
+  {
+    "name": "reasoner_request",
+    "file": "reasoner_request.msgpack",
+    "size_bytes": 228
+  },
+  {
+    "name": "session_request",
+    "file": "session_request.msgpack",
+    "size_bytes": 229
+  },
+  {
+    "name": "flush_cache_request",
+    "file": "flush_cache_request.msgpack",
+    "size_bytes": 46
+  },
+  {
+    "name": "profile_request",
+    "file": "profile_request.msgpack",
+    "size_bytes": 41
+  }
+]

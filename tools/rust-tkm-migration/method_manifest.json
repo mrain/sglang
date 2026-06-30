@@ -1,0 +1,1589 @@
+{
+  "methods": [
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 174,
+      "name": "ReqState.append_text",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 178,
+      "name": "ReqState.get_text",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 184,
+      "name": "ReqState.get_crash_dump_output",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 223,
+      "name": "_slice_streaming_output_meta_info",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 248,
+      "name": "TokenizerManager.serving_chat_class",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 257,
+      "name": "TokenizerManager.__init__",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 299,
+      "name": "TokenizerManager.init_model_config",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 327,
+      "name": "TokenizerManager.init_tokenizer_and_processor",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 382,
+      "name": "TokenizerManager.init_ipc_channels",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 405,
+      "name": "TokenizerManager._dispatch_to_scheduler",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 410,
+      "name": "TokenizerManager._async_dispatch_to_scheduler",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 415,
+      "name": "TokenizerManager.init_running_status",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 432,
+      "name": "TokenizerManager.init_request_logging_and_dumping",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 459,
+      "name": "TokenizerManager.init_weight_update",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 474,
+      "name": "TokenizerManager.init_lora",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 493,
+      "name": "TokenizerManager.init_disaggregation",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 527,
+      "name": "TokenizerManager.init_metric_collector_watchdog",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 569,
+      "name": "TokenizerManager.init_request_dispatcher",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 589,
+      "name": "TokenizerManager.generate_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 648,
+      "name": "TokenizerManager._detect_input_format",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 671,
+      "name": "TokenizerManager._prepare_tokenizer_input",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 682,
+      "name": "TokenizerManager._extract_tokenizer_results",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 706,
+      "name": "TokenizerManager._tokenize_texts",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 793,
+      "name": "TokenizerManager._tokenize_one_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 948,
+      "name": "TokenizerManager._validate_one_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1031,
+      "name": "TokenizerManager._validate_mm_limits",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1046,
+      "name": "TokenizerManager._validate_for_matryoshka_dim",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1074,
+      "name": "TokenizerManager._validate_token_ids_logprob",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1094,
+      "name": "TokenizerManager._validate_input_ids_in_vocab",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1112,
+      "name": "TokenizerManager._create_tokenized_object",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1222,
+      "name": "TokenizerManager._resolve_embed_overrides",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1241,
+      "name": "TokenizerManager._batch_tokenize_and_process",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1285,
+      "name": "TokenizerManager._validate_batch_tokenization_constraints",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1303,
+      "name": "TokenizerManager._batch_has_text",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1315,
+      "name": "TokenizerManager._should_use_batch_tokenization",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1331,
+      "name": "TokenizerManager._send_one_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1343,
+      "name": "TokenizerManager._send_batch_request",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1365,
+      "name": "TokenizerManager._coalesce_streaming_chunks",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1402,
+      "name": "TokenizerManager._handle_abort_finish_reason",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1446,
+      "name": "TokenizerManager._wait_one_response",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1556,
+      "name": "TokenizerManager._handle_batch_request",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1677,
+      "name": "TokenizerManager.abort_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1696,
+      "name": "TokenizerManager.pause_generation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1711,
+      "name": "TokenizerManager.continue_generation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1717,
+      "name": "TokenizerManager.update_weights_from_disk",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1750,
+      "name": "TokenizerManager._update_model_path_info",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1756,
+      "name": "TokenizerManager._wait_for_model_update_from_disk",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1778,
+      "name": "TokenizerManager.configure_logging",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1802,
+      "name": "TokenizerManager.freeze_gc",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1808,
+      "name": "TokenizerManager.create_abort_task",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1822,
+      "name": "TokenizerManager.auto_create_handle_loop",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1847,
+      "name": "TokenizerManager.handle_loop",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1862,
+      "name": "TokenizerManager._handle_batch_output",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2139,
+      "name": "TokenizerManager.add_logprob_to_meta_info",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2226,
+      "name": "TokenizerManager.convert_logprob_style",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2294,
+      "name": "TokenizerManager.detokenize_logprob_tokens",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2314,
+      "name": "TokenizerManager.detokenize_top_logprobs_tokens",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2334,
+      "name": "TokenizerManager._calculate_spec_decoding_metrics",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2388,
+      "name": "TokenizerManager._request_has_grammar",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2396,
+      "name": "TokenizerManager.collect_metrics",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2459,
+      "name": "TokenizerManager.dump_requests",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2491,
+      "name": "TokenizerManager.record_request_for_crash_dump",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2508,
+      "name": "TokenizerManager._dump_data_to_file",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2537,
+      "name": "TokenizerManager.dump_requests_before_crash",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2645,
+      "name": "TokenizerManager.sigterm_watchdog",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2691,
+      "name": "TokenizerManager.force_exit_handler",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2695,
+      "name": "TokenizerManager._handle_abort_req",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2752,
+      "name": "TokenizerManager.update_active_ranks",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2755,
+      "name": "TokenizerManager._handle_open_session_req_output",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2766,
+      "name": "TokenizerManager._handle_update_weights_from_disk_req_output",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2775,
+      "name": "TokenizerManager._validate_and_resolve_lora",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2796,
+      "name": "TokenizerManager._resolve_lora_path",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2850,
+      "name": "TokenizerManager._init_req_state",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2895,
+      "name": "TokenizerManager._discard_pending_req_states",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2909,
+      "name": "TokenizerManager._should_dispatch_to_encoder",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2945,
+      "name": "TokenizerManager._handle_epd_disaggregation_encode_request",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2975,
+      "name": "TokenizerManager.convert_to_span_attrs",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3044,
+      "name": "TokenizerManager._set_default_priority",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3060,
+      "name": "print_exception_wrapper",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3076,
+      "name": "_get_processor_wrapper",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3107,
+      "name": "_determine_tensor_transport_mode",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3118,
+      "name": "SignalHandler.__init__",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3121,
+      "name": "SignalHandler.sigterm_handler",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3127,
+      "name": "SignalHandler.running_phase_sigquit_handler",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3153,
+      "name": "stamp_http_worker_ipc",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 174,
+      "name": "append_text",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 178,
+      "name": "get_text",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 184,
+      "name": "get_crash_dump_output",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 248,
+      "name": "serving_chat_class",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 257,
+      "name": "__init__",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 299,
+      "name": "init_model_config",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 327,
+      "name": "init_tokenizer_and_processor",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 382,
+      "name": "init_ipc_channels",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 405,
+      "name": "_dispatch_to_scheduler",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 410,
+      "name": "_async_dispatch_to_scheduler",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 415,
+      "name": "init_running_status",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 432,
+      "name": "init_request_logging_and_dumping",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 459,
+      "name": "init_weight_update",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 474,
+      "name": "init_lora",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 493,
+      "name": "init_disaggregation",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 527,
+      "name": "init_metric_collector_watchdog",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 569,
+      "name": "init_request_dispatcher",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 589,
+      "name": "generate_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 648,
+      "name": "_detect_input_format",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 671,
+      "name": "_prepare_tokenizer_input",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 682,
+      "name": "_extract_tokenizer_results",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 706,
+      "name": "_tokenize_texts",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 793,
+      "name": "_tokenize_one_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 948,
+      "name": "_validate_one_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1031,
+      "name": "_validate_mm_limits",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1046,
+      "name": "_validate_for_matryoshka_dim",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1074,
+      "name": "_validate_token_ids_logprob",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1094,
+      "name": "_validate_input_ids_in_vocab",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1112,
+      "name": "_create_tokenized_object",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1222,
+      "name": "_resolve_embed_overrides",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1241,
+      "name": "_batch_tokenize_and_process",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1285,
+      "name": "_validate_batch_tokenization_constraints",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1303,
+      "name": "_batch_has_text",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1315,
+      "name": "_should_use_batch_tokenization",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1331,
+      "name": "_send_one_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1343,
+      "name": "_send_batch_request",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1365,
+      "name": "_coalesce_streaming_chunks",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1402,
+      "name": "_handle_abort_finish_reason",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1446,
+      "name": "_wait_one_response",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1556,
+      "name": "_handle_batch_request",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1677,
+      "name": "abort_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1696,
+      "name": "pause_generation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1711,
+      "name": "continue_generation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1717,
+      "name": "update_weights_from_disk",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1750,
+      "name": "_update_model_path_info",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1756,
+      "name": "_wait_for_model_update_from_disk",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1778,
+      "name": "configure_logging",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1802,
+      "name": "freeze_gc",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1808,
+      "name": "create_abort_task",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1822,
+      "name": "auto_create_handle_loop",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1847,
+      "name": "handle_loop",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1862,
+      "name": "_handle_batch_output",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2139,
+      "name": "add_logprob_to_meta_info",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2226,
+      "name": "convert_logprob_style",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2294,
+      "name": "detokenize_logprob_tokens",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2314,
+      "name": "detokenize_top_logprobs_tokens",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2334,
+      "name": "_calculate_spec_decoding_metrics",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2388,
+      "name": "_request_has_grammar",
+      "phase": 3
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2396,
+      "name": "collect_metrics",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2459,
+      "name": "dump_requests",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2491,
+      "name": "record_request_for_crash_dump",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2508,
+      "name": "_dump_data_to_file",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2537,
+      "name": "dump_requests_before_crash",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2645,
+      "name": "sigterm_watchdog",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2691,
+      "name": "force_exit_handler",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2695,
+      "name": "_handle_abort_req",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2752,
+      "name": "update_active_ranks",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2755,
+      "name": "_handle_open_session_req_output",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2766,
+      "name": "_handle_update_weights_from_disk_req_output",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2775,
+      "name": "_validate_and_resolve_lora",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2796,
+      "name": "_resolve_lora_path",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2850,
+      "name": "_init_req_state",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2895,
+      "name": "_discard_pending_req_states",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2909,
+      "name": "_should_dispatch_to_encoder",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2945,
+      "name": "_handle_epd_disaggregation_encode_request",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2975,
+      "name": "convert_to_span_attrs",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3044,
+      "name": "_set_default_priority",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3118,
+      "name": "__init__",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3121,
+      "name": "sigterm_handler",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 3127,
+      "name": "running_phase_sigquit_handler",
+      "phase": 8
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 1810,
+      "name": "abort_request",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2517,
+      "name": "background_task",
+      "phase": 2
+    },
+    {
+      "file": "tokenizer_manager.py",
+      "lineno": 2933,
+      "name": "_count_mm_items",
+      "phase": 7
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 130,
+      "name": "TokenizerControlMixin.init_communicators",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 144,
+      "name": "TokenizerControlMixin.add_external_corpus",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 220,
+      "name": "TokenizerControlMixin.remove_external_corpus",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 235,
+      "name": "TokenizerControlMixin.list_external_corpora",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 256,
+      "name": "TokenizerControlMixin.flush_cache",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 264,
+      "name": "TokenizerControlMixin.clear_hicache_storage",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 272,
+      "name": "TokenizerControlMixin.attach_hicache_storage",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 308,
+      "name": "TokenizerControlMixin.detach_hicache_storage",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 325,
+      "name": "TokenizerControlMixin.start_profile",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 343,
+      "name": "TokenizerControlMixin.stop_profile",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 348,
+      "name": "TokenizerControlMixin._execute_profile",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 354,
+      "name": "TokenizerControlMixin.start_expert_distribution_record",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 359,
+      "name": "TokenizerControlMixin.stop_expert_distribution_record",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 364,
+      "name": "TokenizerControlMixin.dump_expert_distribution_record",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 369,
+      "name": "TokenizerControlMixin.init_weights_update_group",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 382,
+      "name": "TokenizerControlMixin.destroy_weights_update_group",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 395,
+      "name": "TokenizerControlMixin.update_weights_from_distributed",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 425,
+      "name": "TokenizerControlMixin.init_weights_send_group_for_remote_instance",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 440,
+      "name": "TokenizerControlMixin.send_weights_to_remote_instance",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 453,
+      "name": "TokenizerControlMixin.update_weights_from_tensor",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 486,
+      "name": "TokenizerControlMixin.update_weights_from_ipc",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 521,
+      "name": "TokenizerControlMixin._unload_lora_adapter_locked",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 541,
+      "name": "TokenizerControlMixin.load_lora_adapter",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 619,
+      "name": "TokenizerControlMixin.load_lora_adapter_from_tensors",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 689,
+      "name": "TokenizerControlMixin.unload_lora_adapter",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 721,
+      "name": "TokenizerControlMixin.get_weights_by_name",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 734,
+      "name": "TokenizerControlMixin.release_memory_occupation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 742,
+      "name": "TokenizerControlMixin.resume_memory_occupation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 750,
+      "name": "TokenizerControlMixin.check_weights",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 773,
+      "name": "TokenizerControlMixin.slow_down",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 781,
+      "name": "TokenizerControlMixin.get_internal_state",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 790,
+      "name": "TokenizerControlMixin.set_internal_state",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 799,
+      "name": "TokenizerControlMixin.dumper_control",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 805,
+      "name": "TokenizerControlMixin.get_loads",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 833,
+      "name": "TokenizerControlMixin.open_session",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 860,
+      "name": "TokenizerControlMixin.close_session",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 867,
+      "name": "TokenizerControlMixin._update_weight_version_if_provided",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 130,
+      "name": "init_communicators",
+      "phase": 1
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 144,
+      "name": "add_external_corpus",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 220,
+      "name": "remove_external_corpus",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 235,
+      "name": "list_external_corpora",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 256,
+      "name": "flush_cache",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 264,
+      "name": "clear_hicache_storage",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 272,
+      "name": "attach_hicache_storage",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 308,
+      "name": "detach_hicache_storage",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 325,
+      "name": "start_profile",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 343,
+      "name": "stop_profile",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 348,
+      "name": "_execute_profile",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 354,
+      "name": "start_expert_distribution_record",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 359,
+      "name": "stop_expert_distribution_record",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 364,
+      "name": "dump_expert_distribution_record",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 369,
+      "name": "init_weights_update_group",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 382,
+      "name": "destroy_weights_update_group",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 395,
+      "name": "update_weights_from_distributed",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 425,
+      "name": "init_weights_send_group_for_remote_instance",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 440,
+      "name": "send_weights_to_remote_instance",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 453,
+      "name": "update_weights_from_tensor",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 486,
+      "name": "update_weights_from_ipc",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 521,
+      "name": "_unload_lora_adapter_locked",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 541,
+      "name": "load_lora_adapter",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 619,
+      "name": "load_lora_adapter_from_tensors",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 689,
+      "name": "unload_lora_adapter",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 721,
+      "name": "get_weights_by_name",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 734,
+      "name": "release_memory_occupation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 742,
+      "name": "resume_memory_occupation",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 750,
+      "name": "check_weights",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 773,
+      "name": "slow_down",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 781,
+      "name": "get_internal_state",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 790,
+      "name": "set_internal_state",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 799,
+      "name": "dumper_control",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 805,
+      "name": "get_loads",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 833,
+      "name": "open_session",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 860,
+      "name": "close_session",
+      "phase": 4
+    },
+    {
+      "file": "tokenizer_control_mixin.py",
+      "lineno": 867,
+      "name": "_update_weight_version_if_provided",
+      "phase": 5
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 29,
+      "name": "TokenizerManagerScoreMixin.score_prompts",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 80,
+      "name": "TokenizerManagerScoreMixin._build_multi_item_token_sequence",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 109,
+      "name": "TokenizerManagerScoreMixin._batch_tokenize_query_and_items",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 140,
+      "name": "TokenizerManagerScoreMixin._process_multi_item_scoring_results",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 236,
+      "name": "TokenizerManagerScoreMixin._process_single_item_scoring_results",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 323,
+      "name": "TokenizerManagerScoreMixin._resolve_overrides_for_sequence",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 358,
+      "name": "TokenizerManagerScoreMixin._resolve_embed_overrides_for_request",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 396,
+      "name": "TokenizerManagerScoreMixin._build_token_id_inputs",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 512,
+      "name": "TokenizerManagerScoreMixin.score_request",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 731,
+      "name": "TokenizerManagerScoreMixin._convert_logprobs_to_scores",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 762,
+      "name": "TokenizerManagerScoreMixin._extract_logprobs_for_tokens",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 29,
+      "name": "score_prompts",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 80,
+      "name": "_build_multi_item_token_sequence",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 109,
+      "name": "_batch_tokenize_query_and_items",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 140,
+      "name": "_process_multi_item_scoring_results",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 236,
+      "name": "_process_single_item_scoring_results",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 323,
+      "name": "_resolve_overrides_for_sequence",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 358,
+      "name": "_resolve_embed_overrides_for_request",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 396,
+      "name": "_build_token_id_inputs",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 512,
+      "name": "score_request",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 731,
+      "name": "_convert_logprobs_to_scores",
+      "phase": 6
+    },
+    {
+      "file": "tokenizer_manager_score_mixin.py",
+      "lineno": 762,
+      "name": "_extract_logprobs_for_tokens",
+      "phase": 6
+    }
+  ],
+  "unassigned": []
+}

@@ -16,6 +16,7 @@ mod fsm;
 mod ids;
 mod message;
 mod runtime;
+pub mod schema;
 mod tokenizer;
 mod tokenizer_manager;
 
