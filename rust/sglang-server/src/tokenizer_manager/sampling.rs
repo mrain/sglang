@@ -3,20 +3,43 @@
 //! (python/sglang/srt/sampling/sampling_params.py).
 //!
 //! The embedded Rust server replaces the Python `TokenizerManager`, which is the
-//! only place those three run on the normal (zmq) path. Running them here, in the
-//! ingress `Normalizing` FSM step, keeps the per-request CPU (notably the
-//! stop-string work) off the scheduler's latency-critical loop. We set
-//! `is_normalized=true` on the wire so the scheduler's `__post_init__` and
-//! `normalize` early-return; its `verify` is likewise skipped (we did it here).
+//! only caller of `sampling_params.normalize(tokenizer)` on the normal (zmq) path
+//! (see `_tokenize_one_request` in tokenizer_manager.py). Running normalization
+//! here, in the ingress `Normalizing` FSM step, keeps the per-request CPU work
+//! (notably stop-string handling) off the scheduler's latency-critical loop. We
+//! set `is_normalized=true` on the wire so the Python scheduler's `__post_init__`
+//! and `normalize` early-return.
+//!
+//! ## Covered fields (fully ported)
+//!
+//! | Field | Python | Rust |
+//! |---|---|---|
+//! | temperature | default 1.0, greedy ∼0 → 1.0+top_k=1 | same |
+//! | top_k | default -1 → TOP_K_ALL | same |
+//! | top_p | default 1.0, range (0, 1] | same |
+//! | min_p | default 0.0, range [0, 1] | same |
+//! | frequency_penalty | default 0.0, range [-2, 2] | same |
+//! | presence_penalty | default 0.0, range [-2, 2] | same |
+//! | repetition_penalty | default 1.0, range (0, 2] | same |
+//! | min_new_tokens | default 0, ≤ max_new_tokens | same |
+//! | max_new_tokens | default 128, ≥ 0 | same (range only) |
+//! | stop / stop_regex | string→list, token-length  | char-length (safe over-estimate) |
+//! | grammar exclusivity | regex/json/ebnf mutually exclusive | same |
+//!
+//! ## Not ported (not populated by Rust HTTP endpoints)
+//!
+//! - `logit_bias` vocab-range verification
+//! - `stop_token_ids` tokenizer-dependent filtering
+//! - `return_logprob` / `logprob_start_len` / `top_logprobs_num` / `token_ids_logprob`
+//!   (these are top-level `TokenizedGenerateReqInput` fields, not sampling params)
+//!
+//! If a new endpoint starts populating any of the above, add the corresponding
+//! normalization here.
 //!
 //! KEEP IN SYNC with `sampling_params.py`: the constants and ranges below mirror
 //! that file. `stop_str_max_len` uses the character length of each stop string —
 //! a safe over-estimate of its token length (Python's `tokenizer=None` fallback),
 //! which avoids needing the tokenizer here and only widens the detok match window.
-//!
-//! Not ported (the Rust OpenAI/`/generate` handlers don't populate them): the
-//! vocab-bounded `logit_bias` range check, and `stop_token_ids` filtering. Add
-//! them here if those fields start flowing through.
 
 use rmpv::Value;
 
@@ -135,8 +158,8 @@ pub fn normalize_sampling_params(sp: &mut Option<Value>) -> Result<(), Error> {
         ));
     }
 
-    // --- write the normalized fields back; is_normalized=true tells the
-    // scheduler its __post_init__/normalize/verify are already done ---
+    // --- write the normalized fields back, then mark is_normalized=true so
+    // the Python scheduler's __post_init__/normalize/verify early-return ---
     set(&mut map, "temperature", Value::F64(temperature));
     set(&mut map, "top_k", Value::from(top_k));
     set(&mut map, "top_p", Value::F64(top_p));

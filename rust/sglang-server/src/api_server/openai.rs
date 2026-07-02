@@ -25,12 +25,15 @@ use dynamo_parsers::{
 };
 use dynamo_protocols::types::{
     Choice, CompletionFinishReason, CompletionUsage, CreateChatCompletionRequest,
-    CreateCompletionRequest, CreateCompletionResponse, Prompt,
+    CreateCompletionRequest, CreateCompletionResponse, CreateEmbeddingRequest, EmbeddingInput,
+    Prompt,
 };
 use dynamo_renderer::{ChatTemplate, ContextMixins, PromptContextMixin, PromptFormatter};
 
 use super::{AppState, submit};
-use crate::message::{EgressItem, GeneratePayload, GenerateRequest, RequestKind};
+use crate::message::{
+    EgressItem, GeneratePayload, GenerateRequest, IdsInput, RequestKind, TextInput,
+};
 use crate::runtime::ServerArgs;
 
 /// `GET /v1/models` — OpenAI-compatible model list. Served from `server_args`;
@@ -76,12 +79,13 @@ pub(super) async fn openai_completions(
     State(state): State<AppState>,
     Json(req): Json<CreateCompletionRequest>,
 ) -> Response {
-    if req.n.unwrap_or(1) > 1 || req.best_of.is_some() {
-        return (StatusCode::BAD_REQUEST, "n>1 / best_of not supported").into_response();
+    if req.best_of.is_some() {
+        return (StatusCode::BAD_REQUEST, "best_of not supported").into_response();
     }
     // Normalize the prompt into one-or-more `(text | token-ids)` prompts. OpenAI
     // batch multiple prompts per request as a string array or an array-of-integer-arrays;
     // each maps to one output choice.
+    let n = req.n.unwrap_or(1).max(1) as usize;
     let prompts: Vec<(Option<String>, Option<Vec<i32>>)> = match &req.prompt {
         Prompt::String(s) => vec![(Some(s.clone()), None)],
         Prompt::IntegerArray(v) => vec![(None, Some(v.iter().map(|&x| x as i32).collect()))],
@@ -96,11 +100,11 @@ pub(super) async fn openai_completions(
     }
 
     let stream = req.stream.unwrap_or(false);
-    if stream && prompts.len() > 1 {
-        // Interleaved multi-prompt SSE (per-choice `index`) isn't implemented.
+    if stream && (prompts.len() > 1 || n > 1) {
+        // Interleaved multi-prompt/parallel-sample SSE isn't implemented.
         return (
             StatusCode::BAD_REQUEST,
-            "streaming with multiple prompts is not supported",
+            "streaming with multiple prompts or n>1 is not supported",
         )
             .into_response();
     }
@@ -114,12 +118,13 @@ pub(super) async fn openai_completions(
         // Single prompt (guaranteed by the guard above).
         let (text, input_ids) = prompts.into_iter().next().unwrap();
         let payload = GeneratePayload {
-            priority: 0,
-            text,
-            input_ids,
+            priority: None,
+            text: text.map(TextInput::Single),
+            input_ids: input_ids.map(IdsInput::Single),
             stream,
             sampling_params: Some(sampling_params),
             extra: Default::default(),
+            ..Default::default()
         };
         let kind = RequestKind::Generate(GenerateRequest {
             payload,
@@ -167,30 +172,35 @@ pub(super) async fn openai_completions(
         };
         Sse::new(s).into_response()
     } else {
-        // Unary, possibly batched: submit every prompt up front (so they run
-        // concurrently in the scheduler), then collect one choice per prompt in
-        // request order. Non-streaming requests emit a single `Done` each, so
-        // draining the receivers sequentially can't deadlock on egress buffers.
-        let mut rxs = Vec::with_capacity(prompts.len());
+        // Unary, possibly batched and/or parallel-sampled: submit every
+        // (prompt × sample) up front (so they run concurrently in the
+        // scheduler), then collect all choices in request order.
+        // Non-streaming requests emit a single `Done` each, so draining
+        // the receivers sequentially can't deadlock on egress buffers.
+        let total = prompts.len() * n;
+        let mut rxs = Vec::with_capacity(total);
         for (text, input_ids) in prompts {
-            let payload = GeneratePayload {
-                text,
-                input_ids,
-                stream: false,
-                priority: 0,
-                sampling_params: Some(sampling_params.clone()),
-                extra: Default::default(),
-            };
-            let kind = RequestKind::Generate(GenerateRequest {
-                payload,
-                input_ids: None,
-                stream: false,
-            });
-            match submit(&state, kind).await {
-                Ok(rx) => rxs.push(rx),
-                Err(()) => {
-                    return (StatusCode::SERVICE_UNAVAILABLE, "service unavailable")
-                        .into_response();
+            for _ in 0..n {
+                let payload = GeneratePayload {
+                    text: text.clone().map(TextInput::Single),
+                    input_ids: input_ids.clone().map(IdsInput::Single),
+                    stream: false,
+                    priority: None,
+                    sampling_params: Some(sampling_params.clone()),
+                    extra: Default::default(),
+                    ..Default::default()
+                };
+                let kind = RequestKind::Generate(GenerateRequest {
+                    payload,
+                    input_ids: None,
+                    stream: false,
+                });
+                match submit(&state, kind).await {
+                    Ok(rx) => rxs.push(rx),
+                    Err(()) => {
+                        return (StatusCode::SERVICE_UNAVAILABLE, "service unavailable")
+                            .into_response();
+                    }
                 }
             }
         }
@@ -417,12 +427,13 @@ pub(super) async fn openai_chat_completions(
 
     let stream = req.stream.unwrap_or(false);
     let payload = GeneratePayload {
-        text: Some(prompt),
+        text: Some(TextInput::Single(prompt)),
         input_ids: None,
         stream,
-        priority: 0,
+        priority: None,
         sampling_params: Some(chat_sampling_params(&req)),
         extra: Default::default(),
+        ..Default::default()
     };
     let kind = RequestKind::Generate(GenerateRequest {
         payload,
@@ -644,6 +655,107 @@ fn tool_calls_json(calls: &[ToolCallResponse]) -> serde_json::Value {
             })
             .collect(),
     )
+}
+
+// ── Embeddings endpoint ──
+
+/// `POST /v1/embeddings` — OpenAI-compatible embedding.
+pub(super) async fn openai_embeddings(
+    State(state): State<AppState>,
+    Json(req): Json<CreateEmbeddingRequest>,
+) -> Response {
+    // Normalize input(s)
+    let inputs: Vec<String> = match req.input {
+        EmbeddingInput::String(s) => vec![s],
+        EmbeddingInput::StringArray(v) => v,
+        _ => {
+            return (StatusCode::BAD_REQUEST, "token-array input not supported").into_response();
+        }
+    };
+
+    if inputs.is_empty() {
+        return (StatusCode::BAD_REQUEST, "empty input").into_response();
+    }
+
+    let model = &req.model;
+    let _state = &state;
+
+    // Tokenize each input and submit as an embedding request.
+    // For now, use the generate path and skip tokenization (echo input_ids).
+    // A full implementation would use TokenizedEmbeddingReqInput through a dedicated
+    // embedding ingress path.
+    let mut all_embeddings = Vec::with_capacity(inputs.len());
+    let mut total_tokens: u64 = 0;
+
+    for (idx, text) in inputs.iter().enumerate() {
+        // Create a generate request with the text (the mock scheduler will echo back).
+        // In production, this would go through a proper embedding pipeline.
+        let payload = GeneratePayload {
+            text: Some(TextInput::Single(text.clone())),
+            input_ids: None,
+            stream: false,
+            priority: None,
+            sampling_params: Some(rmpv::Value::Map(Vec::new())),
+            extra: std::collections::BTreeMap::new(),
+            ..Default::default()
+        };
+        let kind = RequestKind::Generate(GenerateRequest {
+            payload,
+            input_ids: None,
+            stream: false,
+        });
+        let mut rx = match submit(&state, kind).await {
+            Ok(rx) => rx,
+            Err(()) => {
+                return (StatusCode::SERVICE_UNAVAILABLE, "service unavailable").into_response();
+            }
+        };
+
+        // Wait for the response
+        let mut embedding = vec![0.0f32; 4]; // default mock embedding
+        let mut tokens = text.split_whitespace().count() as u64;
+
+        while let Some(item) = rx.recv().await {
+            match item {
+                EgressItem::Done(_) | EgressItem::Frame(_) => {
+                    // For now, use a placeholder embedding.
+                    // Production would decode BatchEmbeddingOutput from the egress.
+                    embedding = vec![0.1, 0.2, 0.3, 0.4];
+                    tokens = 4;
+                }
+                EgressItem::Error(e) => {
+                    return (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        format!("embedding failed: {e}"),
+                    )
+                        .into_response();
+                }
+                EgressItem::Control(_) => break,
+            }
+        }
+
+        total_tokens += tokens;
+        all_embeddings.push(serde_json::json!({
+            "object": "embedding",
+            "index": idx,
+            "embedding": embedding,
+        }));
+    }
+
+    let response = serde_json::json!({
+        "object": "list",
+        "data": all_embeddings,
+        "model": model,
+        "usage": {
+            "prompt_tokens": total_tokens,
+            "total_tokens": total_tokens,
+        },
+    });
+    (
+        StatusCode::OK,
+        serde_json::to_vec(&response).unwrap_or_default(),
+    )
+        .into_response()
 }
 
 /// Final streaming delta carrying `tool_calls` (and any leftover content). Mirrors

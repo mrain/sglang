@@ -179,6 +179,23 @@ impl ServerArgs {
             .unwrap_or(false)
     }
 
+    /// Whether priority scheduling is enabled for this server.
+    pub fn enable_priority_scheduling(&self) -> bool {
+        self.data
+            .get("enable_priority_scheduling")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Default priority value used when a request omits priority and
+    /// priority scheduling is enabled. `None` means no default is applied
+    /// (matching Python's `default_priority_value: Optional[int] = None`).
+    pub fn default_priority_value(&self) -> Option<i64> {
+        self.data
+            .get("default_priority_value")
+            .and_then(|v| v.as_i64())
+    }
+
     /// `reasoning_parser` family name (e.g. `deepseek-r1`, `qwen3`, `gpt-oss`).
     /// `None` → `/v1/chat/completions` returns content without splitting out a
     /// `reasoning_content`. `dynamo-parsers` normalizes the name and falls back
@@ -356,6 +373,8 @@ pub fn start(cfg: RuntimeConfig) -> Result<Runtime, String> {
                 ingress_tx,
                 skip_tokenizer_init,
                 cfg.server_args.context_len().unwrap_or(0),
+                cfg.server_args.enable_priority_scheduling(),
+                cfg.server_args.default_priority_value(),
             )
         });
     }

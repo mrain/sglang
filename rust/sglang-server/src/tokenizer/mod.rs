@@ -16,7 +16,7 @@ use std::sync::Arc;
 
 use crate::error::Error;
 use crate::fsm::Event;
-use crate::message::{EgressItem, Request, RequestKind};
+use crate::message::{EgressItem, Request, RequestKind, TextInput};
 use crate::runtime::Runnable;
 use crate::runtime::channels::TmEvent;
 
@@ -150,10 +150,16 @@ impl Runnable for TokenizerWorker {
                 tracing::error!("tokenizer pool received a non-generate request");
                 continue;
             };
-            match self
-                .tokenizer
-                .encode(g.payload.text.as_deref().unwrap_or(""))
-            {
+            match self.tokenizer.encode(
+                g.payload
+                    .text
+                    .as_ref()
+                    .and_then(|t| match t {
+                        TextInput::Single(s) => Some(s.as_str()),
+                        TextInput::Batch(_) => None,
+                    })
+                    .unwrap_or(""),
+            ) {
                 Ok(ids) => {
                     g.input_ids = Some(ids);
                     if self.tm.send(TmEvent::Tokenized(req)).is_err() {

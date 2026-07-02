@@ -83,11 +83,30 @@ impl DetokenizerBackend {
             DetokenizerBackend::Skip => None,
         }
     }
+
+    /// Decode a batch of individual token IDs to their text representations.
+    /// Each ID is decoded separately (not concatenated). Returns empty vec
+    /// in skip mode.
+    fn batch_decode(&self, ids: &[i32]) -> Vec<String> {
+        match self {
+            DetokenizerBackend::Dynamo(t) => ids
+                .iter()
+                .map(|&id| {
+                    t.decode(&[id as u32], SKIP_SPECIAL_TOKENS)
+                        .map(|r| r.into())
+                        .unwrap_or_default()
+                })
+                .collect(),
+            DetokenizerBackend::Skip => Vec::new(),
+        }
+    }
 }
 
 struct DetokState {
     sink: EgressSink,
     stream: bool,
+    /// When true, logprob tuples include decoded token text.
+    return_text_in_logprobs: bool,
     /// Cumulative decoded text (SGLang stream frames carry cumulative text).
     text: String,
     /// Cumulative output token ids, emitted as `output_ids` in
@@ -102,6 +121,24 @@ struct DetokState {
     /// `Request` (and its FSM) was handed to the scheduler when queued; the
     /// shard is the sole owner of the request's egress state, so no lock.
     fsm: RequestState,
+
+    // ── Logprob accumulators (cumulative across chunks) ──
+    input_token_logprobs_val: Vec<f32>,
+    input_token_logprobs_idx: Vec<i32>,
+    output_token_logprobs_val: Vec<f32>,
+    output_token_logprobs_idx: Vec<i32>,
+    input_top_logprobs_val: Vec<Vec<(f32, i32)>>,
+    output_top_logprobs_val: Vec<Vec<(f32, i32)>>,
+
+    /// Prompt token IDs, set by `SetPromptIds` after tokenization.
+    prompt_token_ids: Option<Vec<i32>>,
+
+    /// Cumulative decoded logprob token texts (position-aligned with
+    /// `output_token_logprobs_val`). Only populated when `return_text_in_logprobs`
+    /// is true; empty otherwise.
+    output_token_logprob_texts: Vec<Option<String>>,
+    /// Cumulative decoded logprob token texts for input logprobs.
+    input_token_logprob_texts: Vec<Option<String>>,
 }
 
 /// One detokenizer shard: owns a *local* `id -> DetokState` map (single
@@ -126,23 +163,46 @@ impl Runnable for DetokenizerWorker {
 
         while let Ok(msg) = self.rx.recv() {
             match msg {
-                DetokMsg::Register { id, sink, stream } => {
+                DetokMsg::Register {
+                    id,
+                    sink,
+                    stream,
+                    return_text_in_logprobs,
+                } => {
                     table.insert(
                         id,
                         DetokState {
                             sink,
                             stream,
+                            return_text_in_logprobs,
                             text: String::new(),
                             output_ids: Vec::new(),
                             completion_tokens: 0,
                             decoder: self.backend.new_decoder(),
                             // Registered == handed to the scheduler == Queued.
                             fsm: RequestState::Queued,
+                            input_token_logprobs_val: Vec::new(),
+                            input_token_logprobs_idx: Vec::new(),
+                            output_token_logprobs_val: Vec::new(),
+                            output_token_logprobs_idx: Vec::new(),
+                            input_top_logprobs_val: Vec::new(),
+                            output_top_logprobs_val: Vec::new(),
+                            prompt_token_ids: None,
+                            output_token_logprob_texts: Vec::new(),
+                            input_token_logprob_texts: Vec::new(),
                         },
                     );
                 }
-                DetokMsg::Chunk(ev) => handle_chunk(&mut table, ev),
+                DetokMsg::Chunk(ev) => handle_chunk(&mut table, &self.backend, ev),
                 DetokMsg::Result { id, payload } => handle_result(&mut table, id, payload),
+                DetokMsg::SetPromptIds {
+                    id,
+                    prompt_token_ids,
+                } => {
+                    if let Some(st) = table.get_mut(&id) {
+                        st.prompt_token_ids = Some(prompt_token_ids);
+                    }
+                }
             }
         }
     }
@@ -159,7 +219,11 @@ fn handle_result(table: &mut HashMap<RequestId, DetokState>, id: RequestId, payl
     }
 }
 
-fn handle_chunk(table: &mut HashMap<RequestId, DetokState>, ev: ChunkEvent) {
+fn handle_chunk(
+    table: &mut HashMap<RequestId, DetokState>,
+    backend: &DetokenizerBackend,
+    ev: ChunkEvent,
+) {
     let id = match ev.rid.parse::<u64>() {
         Ok(v) => RequestId(v),
         Err(_) => {
@@ -198,16 +262,65 @@ fn handle_chunk(table: &mut HashMap<RequestId, DetokState>, ev: ChunkEvent) {
     // Streaming → Streaming (finish:false) or Streaming → Finalizing (finish:true).
     let _ = st.fsm.apply(Event::Chunk { finish: finished });
 
+    // ── Logprob accumulation ──
+    // Each chunk carries the logprobs for just this step's tokens; we accumulate
+    // them so GenerationOutput always carries the cumulative view. Input logprobs
+    // are only present on the first chunk (when return_logprob is set); output
+    // logprobs and top-k are per-step.
+    if !ev.input_token_logprobs_val.is_empty() {
+        st.input_token_logprobs_val
+            .extend(&ev.input_token_logprobs_val);
+        st.input_token_logprobs_idx
+            .extend(&ev.input_token_logprobs_idx);
+    }
+    st.output_token_logprobs_val
+        .extend(&ev.output_token_logprobs_val);
+    st.output_token_logprobs_idx
+        .extend(&ev.output_token_logprobs_idx);
+    if !ev.input_top_logprobs_val.is_empty() {
+        st.input_top_logprobs_val.extend(ev.input_top_logprobs_val);
+    }
+    if !ev.output_top_logprobs_val.is_empty() {
+        st.output_top_logprobs_val
+            .extend(ev.output_top_logprobs_val);
+    }
+
+    // ── Logprob text decoding (when return_text_in_logprobs is true) ──
+    // Batch-decode the current step's new logprob IDs and append to the
+    // cumulative text accumulator, so GenerationOutput carries cumulative
+    // text labels position-aligned with the cumulative logprob arrays.
+    if st.return_text_in_logprobs && !ev.output_token_logprobs_idx.is_empty() {
+        let texts = backend.batch_decode(&ev.output_token_logprobs_idx);
+        st.output_token_logprob_texts
+            .extend(texts.into_iter().map(Some));
+    }
+    if st.return_text_in_logprobs && !ev.input_token_logprobs_idx.is_empty() {
+        let texts = backend.batch_decode(&ev.input_token_logprobs_idx);
+        st.input_token_logprob_texts
+            .extend(texts.into_iter().map(Some));
+    }
+
     // Protocol-neutral cumulative snapshot; the API handler formats it. `text`
     // and `output_ids` are cumulative so we clone (the entry persists across
     // streamed frames); `rid`/`finish_reason` are moved (this `ev` is done).
+    let offset = (st.completion_tokens - ev.token_ids.len() as u64) as usize;
     let output = GenerationOutput {
         rid: ev.rid,
         text: st.text.clone(),
         output_ids: st.output_ids.clone(),
         prompt_tokens: ev.prompt_tokens,
         completion_tokens: st.completion_tokens,
+        last_output_offset: offset,
         finish_reason: ev.finish_reason,
+        output_token_logprobs: st.output_token_logprobs_val.clone(),
+        output_token_logprob_ids: st.output_token_logprobs_idx.clone(),
+        output_top_logprobs: st.output_top_logprobs_val.clone(),
+        input_token_logprobs: st.input_token_logprobs_val.clone(),
+        input_token_logprob_ids: st.input_token_logprobs_idx.clone(),
+        input_top_logprobs: st.input_top_logprobs_val.clone(),
+        prompt_token_ids: st.prompt_token_ids.clone(),
+        output_token_logprob_texts: st.output_token_logprob_texts.clone(),
+        input_token_logprob_texts: st.input_token_logprob_texts.clone(),
     };
 
     if finished {

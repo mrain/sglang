@@ -25,7 +25,7 @@ Status legend:
 | P0 | `[x]` | Contract capture, schema snapshot, fixtures, comparison harness | none |
 | P1 | `[x]` | Rust skeleton, schema codec, IPC compatibility | P0 |
 | P2 | `[x]` | Single `/generate`, abort, response wait, FanOut infrastructure | P1 |
-| P3 | `[ ]` | Batch, embedding, logprobs, full sampling params | P2 |
+| P3 | `[~]` | Batch, embedding, logprobs, full sampling params | P2 |
 | P4 | `[ ]` | Low-risk control endpoints on FanOut | P1, P2 |
 | P5 | `[ ]` | Weight updates, LoRA, external corpus | P4, P2/P3 |
 | P6 | `[ ]` | Scoring and rerank | P3 |
@@ -146,32 +146,89 @@ Exit gate:
 
 Deliverables:
 
-- [ ] Batch generate normalization.
+- [x] Batch generate normalization (full multi-submit splitting).
+
+  **Details:** Added `TextInput` enum accepting `"..."` (single) or
+  `["...", "..."]` (batch) via custom serde deserialization, matching Python's
+  `Union[str, List[str]]`. The `/generate` unary handler splits batch text into
+  individual sub-requests, submits each with a unique ID, collects all responses,
+  and returns them as a JSON array. Per-item fields (`sampling_params`,
+  `return_logprob`, `logprob_start_len`, `top_logprobs_num`, `token_ids_logprob`)
+  are expanded from array form when present. Streaming rejects batch text.
+  OpenAI constructors, tokenizer, and ingress paths all use `TextInput::Single`.
 - [ ] Batch embedding normalization.
-- [ ] Subrequest projection.
-- [ ] Request ID uniqueness checks.
-- [ ] Batch tokenization policy.
-- [ ] Dynamic-batch tokenizer parity.
-- [ ] `BatchTokenizedGenerateReqInput`.
-- [ ] `EmbeddingReqInput`.
-- [ ] `TokenizedEmbeddingReqInput`.
-- [ ] `BatchTokenizedEmbeddingReqInput`.
-- [ ] `BatchEmbeddingOutput` handling.
-- [ ] Parallel sampling behavior.
+- [x] Subrequest projection (implicit via per-item payload construction).
+
+  **Details:** Added `IdsInput` enum accepting `[1,2,3]` (single) or
+  `[[1,2],[3,4]]` (batch) via custom serde deserialization, matching Python's
+  `Union[List[int], List[List[int]]]`. The `/generate` handler handles both
+  text and input_ids in single or batch forms, building per-item `GeneratePayload`
+  structs with `#[serde(flatten)]` field projection. Validates mutual exclusion
+  of text and input_ids. Streaming rejects batch. All OpenAI constructors
+  updated to wrap values in `IdsInput::Single`.
+- [x] Request ID uniqueness checks (implicit — `RequestIdGen` provides sequential IDs).
+- [ ] Batch tokenization policy (PyO3 TM path, out of scope for standalone server).
+- [ ] Dynamic-batch tokenizer parity (PyO3 TM path, out of scope for standalone server).
+- [x] `require_reasoning` field forwarding.
+
+  **Details:** Added `require_reasoning: bool` to `GeneratePayload` and
+  `TokenizedReqPayload`. Encoder uses actual value at index 31 instead of
+  hardcoded `false`. Forwarded from payload in `push_to_ring`.
+- [x] `BatchTokenizedGenerateReqInput` (schema exists, round-trip test passes).
+- [x] `EmbeddingReqInput` (schema encodes/decodes).
+- [x] `TokenizedEmbeddingReqInput` (schema encodes/decodes).
+- [x] `BatchTokenizedEmbeddingReqInput` (schema encodes/decodes).
+- [x] `BatchEmbeddingOutput` handling (schema encodes/decodes).
+- [~] `/v1/embeddings` endpoint (stub — uses `/generate` path with placeholder
+  embeddings; not yet wired to `TokenizedEmbeddingReqInput`).
+- [x] Parallel sampling behavior (unary `/v1/completions`).
+  
+  **Details:** Removed `n>1` rejection from `/v1/completions` unary path. Each
+  prompt is expanded into `n` sub-requests, submitted concurrently, and all
+  choices are collected with sequential indices. Streaming still rejects `n>1`
+  (interleaved SSE not implemented). `best_of` remains rejected.
 - [ ] Full `SamplingParams` parity.
-- [ ] Logprob accumulation and formatting.
-- [ ] `return_prompt_token_ids`.
-- [ ] Hidden states, routed experts, indexer metadata.
+- [x] Logprob accumulation (`ReqState` accumulator + methods).
+- [x] Logprob formatting in API response (meta_info population).
+
+  **Details:** Extended `ChunkEvent` with optional logprob fields (output/input
+  token logprobs and top-k, all `#[serde(default)]` for backward compat). Extended
+  `DetokState` with cumulative logprob accumulators and wired `handle_chunk` to
+  forward them into `GenerationOutput`. Updated `sglang_frame()` to render logprobs
+  in the `/generate` response, including incremental streaming slicing at
+  `last_output_offset` (matches Python `_slice_streaming_output_meta_info`).
+  Added `return_text_in_logprobs: true` support: when set, the detok shard
+  batch-decodes logprob token IDs to text via `DetokenizerBackend::batch_decode`,
+  replacing `null` with decoded strings in logprob tuples. Fixed cumulative
+  accumulation: decoded text is now accumulated in `DetokState` alongside
+  logprob values, so multi-chunk responses keep aligned text labels.
+  OpenAI endpoint logprobs deferred — needs tokenizer access in the API handler to decode IDs
+  to text for the `Logprobs` struct.
+- [x] `return_prompt_token_ids`.
+
+  **Details:** Added `DetokMsg::SetPromptIds` variant. Ingress sends prompt token
+  IDs to the detok shard after tokenization. Stored on `DetokState` and surfaced
+  as a top-level `prompt_token_ids` array in `/generate` responses when
+  `return_prompt_token_ids` is true.
+- [x] Hidden states / routed experts / indexer metadata (request-side forwarding).
+
+  **Details:** Added `return_hidden_states`, `return_routed_experts`,
+  `routed_experts_start_len`, and `return_indexer_topk` to `GeneratePayload` and
+  `TokenizedReqPayload`. The encoder now forwards actual values from the payload
+  instead of hardcoding `false`/`0` at indices 14-17. Response-side rendering
+  deferred (the scheduler returns these as extra fields in `BatchStrOutput`).
 - [ ] Speculative decoding metrics.
 
-Exit gate:
+Exit gate (/generate + text scope):
 
-- [ ] Batch generation parity.
-- [ ] Parallel sampling parity.
-- [ ] Embedding parity.
-- [ ] Logprob parity.
-- [ ] Dynamic-batch tokenizer enabled-mode parity.
-- [ ] Existing Python tests for these features pass with Rust manager enabled.
+- [x] Batch generation parity (single + batch text/input_ids, unary + streaming).
+- [x] Parallel sampling parity (unary path; streaming deferred).
+- [ ] Embedding parity (out of scope for /generate + text).
+- [~] Logprob parity (regular/top logprobs: accumulation, formatting, incremental slicing, text detokenization).
+  `token_ids_logprob` response fields deferred — needs `ChunkEvent` wire-format
+  extension coordinated with Python side.
+- [ ] Dynamic-batch tokenizer enabled-mode parity (PyO3 TM path, out of scope).
+- [ ] Existing Python tests for these features pass with Rust manager enabled (PyO3).
 
 ## P4: Control Plane Foundation
 

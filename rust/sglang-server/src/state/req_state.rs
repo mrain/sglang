@@ -45,6 +45,17 @@ pub struct ReqState {
     pub output_ids: Vec<i64>,
     pub text: String,
     pub text_chunks: Vec<String>,
+
+    // ── Logprobs (accumulated across streaming chunks) ──
+    pub input_token_logprobs_val: Vec<f64>,
+    pub input_token_logprobs_idx: Vec<i64>,
+    pub output_token_logprobs_val: Vec<f64>,
+    pub output_token_logprobs_idx: Vec<i64>,
+    pub input_top_logprobs_val: Vec<Vec<(f64, i64)>>,
+    pub output_top_logprobs_val: Vec<Vec<(f64, i64)>>,
+
+    // ── Prompt tokens ──
+    pub prompt_token_ids: Option<Vec<i64>>,
 }
 
 impl ReqState {
@@ -61,6 +72,13 @@ impl ReqState {
             text: String::new(),
             text_chunks: Vec::new(),
             last_output_offset: 0,
+            input_token_logprobs_val: Vec::new(),
+            input_token_logprobs_idx: Vec::new(),
+            output_token_logprobs_val: Vec::new(),
+            output_token_logprobs_idx: Vec::new(),
+            input_top_logprobs_val: Vec::new(),
+            output_top_logprobs_val: Vec::new(),
+            prompt_token_ids: None,
         }
     }
 
@@ -92,6 +110,28 @@ impl ReqState {
     /// Set first-token timestamp on the first output.
     pub fn observe_first_token(&mut self) {
         self.first_token_at.get_or_insert_with(Instant::now);
+    }
+
+    /// Accumulate input token logprobs from one chunk.
+    pub fn accumulate_input_logprobs(&mut self, vals: &[f64], idxs: &[i64]) {
+        self.input_token_logprobs_val.extend_from_slice(vals);
+        self.input_token_logprobs_idx.extend_from_slice(idxs);
+    }
+
+    /// Accumulate output token logprobs from one chunk.
+    pub fn accumulate_output_logprobs(&mut self, vals: &[f64], idxs: &[i64]) {
+        self.output_token_logprobs_val.extend_from_slice(vals);
+        self.output_token_logprobs_idx.extend_from_slice(idxs);
+    }
+
+    /// Accumulate top logprobs from one chunk (value, token_id pairs).
+    pub fn accumulate_top_logprobs(
+        &mut self,
+        input: &[Vec<(f64, i64)>],
+        output: &[Vec<(f64, i64)>],
+    ) {
+        self.input_top_logprobs_val.extend_from_slice(input);
+        self.output_top_logprobs_val.extend_from_slice(output);
     }
 }
 

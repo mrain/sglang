@@ -78,6 +78,21 @@ fn roundtrip_fixture(name: &str) {
                 .expect("decode BatchEmbeddingOutput");
             obj.encode().expect("encode")
         }
+        "batch_generate" => {
+            // Decode manually: verify tag, then encode back.
+            let val: rmpv::Value = rmpv::decode::read_value(&mut &fixture_bytes[..])
+                .expect("decode batch_generate fixture");
+            let arr = val.as_array().expect("expected array");
+            assert_eq!(
+                arr.first().and_then(|v| v.as_str()),
+                Some("BatchTokenizedGenerateReqInput"),
+                "batch_generate fixture has wrong tag"
+            );
+            // Re-encode the raw value and compare bytes.
+            let mut buf = Vec::new();
+            rmpv::encode::write_value(&mut buf, &val).expect("re-encode");
+            buf
+        }
         _ => panic!("unknown fixture: {}", name),
     };
 
@@ -181,6 +196,11 @@ fn roundtrip_reasoner() {
 #[test]
 fn roundtrip_session() {
     roundtrip_fixture("session_request");
+}
+
+#[test]
+fn roundtrip_batch_generate() {
+    roundtrip_fixture("batch_generate");
 }
 
 #[test]

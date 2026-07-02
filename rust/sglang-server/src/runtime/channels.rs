@@ -27,6 +27,9 @@ pub enum DetokMsg {
         id: RequestId,
         sink: EgressSink,
         stream: bool,
+        /// When true, the detok shard decodes logprob token IDs to text
+        /// for the third element of each logprob tuple.
+        return_text_in_logprobs: bool,
     },
     Chunk(ChunkEvent),
     /// Control-request result: a single already-serialized JSON payload to
@@ -35,6 +38,13 @@ pub enum DetokMsg {
     Result {
         id: RequestId,
         payload: bytes::Bytes,
+    },
+    /// Prompt token IDs for a request, sent from ingress after tokenization
+    /// (or immediately for already-tokenized requests). Stored on DetokState
+    /// and surfaced in GenerationOutput when return_prompt_token_ids is true.
+    SetPromptIds {
+        id: RequestId,
+        prompt_token_ids: Vec<i32>,
     },
 }
 
